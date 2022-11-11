@@ -1,0 +1,2 @@
+- 作为参数的解析工具，相当于ianorigin 中的handler
+- 

@@ -1,0 +1,5 @@
+package logfor
+
+func main() {
+
+}

@@ -1,0 +1,2 @@
+- 业务封装，相当于origin 中的svc
+  - 然而goframe 中，这里是业务逻辑，也是最复杂的逻辑，对于ianorigin 来说，难点在于model
