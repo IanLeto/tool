@@ -6,6 +6,9 @@ server:
 logger:
   level : "all"
   stdout: true
+database:
+  es:
+    address: "http://49.233.61.57:9211/"
 
 
 
