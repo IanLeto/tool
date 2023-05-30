@@ -14,7 +14,7 @@ bin/
 cbuild
 **/.DS_Store
 .test/
-main
+manifest/docker/main
 output/
 manifest/output/
 temp/
