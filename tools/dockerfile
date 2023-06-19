@@ -1,0 +1,13 @@
+FROM loads/alpine:3.8
+#FROM alpine:latest
+LABEL maintainer="ianleto"
+ENV WORKDIR                 /app
+###############################################################################
+#                                   START
+###############################################################################
+WORKDIR $WORKDIR
+#CMD ./main --gf.gcfg.path=$WORKDIR/config
+CMD ["/bin/bash", "-c", "while true; do echo $(date) ; sleep 100; done"]
+#CMD ./agent init=true -c ./config/config.toml
+
+# 安装make 方式 cd /make-4.2.1 && ./configure && make && make install

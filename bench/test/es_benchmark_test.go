@@ -1,4 +1,4 @@
-package main_test
+package test_test
 
 import (
 	"github.com/stretchr/testify/suite"
