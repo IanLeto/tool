@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: tool
+          image: ianleto/bench:b538e9f
+          imagePullPolicy: IfNotPresent # 如果这个image 不存在本地则拉取
+          ports:
+            - containerPort: 80
