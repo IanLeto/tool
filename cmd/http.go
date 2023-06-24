@@ -14,8 +14,9 @@ var HttpCmd = &cobra.Command{
 		// 获取命令行参数
 		listen, _ := cmd.Flags().GetBool("listen")
 		url, _ := cmd.Flags().GetString("url")
+		port, _ := cmd.Flags().GetString("port")
 		if listen == true {
-			newHttpServer(url, "", "filebeat")
+			newHttpServer(url, port, "filebeat")
 		}
 		client := &http.Client{}
 		_, err := sendRequest(url, client)
@@ -91,7 +92,7 @@ func newHttpServer(url string, port string, demo string) {
 	}
 
 	// 启动HTTP服务器，监听在本地的8080端口
-	if err := http.ListenAndServe(":8080", handler); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", port), handler); err != nil {
 		panic(err)
 	}
 }
@@ -100,5 +101,6 @@ func init() {
 	HttpCmd.Flags().StringP("url", "u", "", "")
 	HttpCmd.Flags().Bool("resp", false, "true 则标准输出响应内容")
 	HttpCmd.Flags().Bool("listen", false, "监听端口")
+	HttpCmd.Flags().String("port", "8080", "监听端口")
 
 }
