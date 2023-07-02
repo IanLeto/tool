@@ -1,6 +1,7 @@
 package test_test
 
 import (
+	"bench/cmd"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -10,10 +11,8 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 	"log"
-	"math/rand"
 	"sync"
 	"testing"
-	"time"
 )
 
 type RelationSuite struct {
@@ -21,57 +20,9 @@ type RelationSuite struct {
 	ES *elasticsearch.Client
 }
 
-type LogEntry struct {
-	Timestamp    time.Time `json:"timestamp"`
-	ServiceName  string    `json:"service_name"`
-	HostName     string    `json:"host_name"`
-	Severity     string    `json:"severity"`
-	Message      string    `json:"message"`
-	ResponseTime int       `json:"response_time"`
-}
-
-func generateLogEntry() LogEntry {
-	serviceNames := []string{"web", "api", "db"}
-	hostNames := []string{"host1", "host2", "host3"}
-	severityLevels := []string{"info", "warning", "error"}
-
-	entry := LogEntry{
-		Timestamp:    time.Now(),
-		ServiceName:  serviceNames[rand.Intn(len(serviceNames))],
-		HostName:     hostNames[rand.Intn(len(hostNames))],
-		Severity:     severityLevels[rand.Intn(len(severityLevels))],
-		Message:      fmt.Sprintf("Sample log message %d", rand.Intn(1000)),
-		ResponseTime: rand.Intn(500),
-	}
-
-	return entry
-}
-
-func indexLogEntry(es *elasticsearch.Client, entry LogEntry) {
-	data, err := json.Marshal(entry)
-	if err != nil {
-		log.Fatalf("Error marshaling log entry: %s", err)
-	}
-
-	req := esapi.IndexRequest{
-		Index:      "log-entries",
-		DocumentID: "",
-		Body:       bytes.NewReader(data),
-		Refresh:    "true",
-	}
-
-	res, err := req.Do(context.Background(), es)
-	if err != nil {
-		log.Fatalf("Error indexing log entry: %s", err)
-	}
-	defer res.Body.Close()
-
-	if res.IsError() {
-		log.Printf("Error indexing document: %s", res.String())
-	}
-}
-
 func (s *RelationSuite) SetupTest() {
+	var x bool
+	fmt.Println(x)
 	// 设置配置文件的路径
 	viper.AddConfigPath("/Users/ian/go/src/bench")
 	// 设置配置文件的名称
@@ -97,12 +48,12 @@ func (s *RelationSuite) SetupTest() {
 func (s *RelationSuite) TestPutData() {
 	// Generate and index sample log entries
 	var wg sync.WaitGroup
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 5000; i++ {
 		wg.Add(1)
 		go func() {
 			for i := 0; i < 1000; i++ {
-				entry := generateLogEntry()
-				indexLogEntry(s.ES, entry)
+				entry := cmd.GenerateLogEntry()
+				cmd.IndexLogEntry(s.ES, entry)
 			}
 			wg.Done()
 		}()
@@ -117,8 +68,8 @@ func BenchmarkStr(b *testing.B) {
 	s.SetupTest()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		entry := generateLogEntry()
-		indexLogEntry(s.ES, entry)
+		entry := cmd.GenerateLogEntry()
+		cmd.IndexLogEntry(s.ES, entry)
 	}
 }
 
@@ -148,7 +99,6 @@ func BenchmarkTerm(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		_, _ = req.Do(context.Background(), s.ES)
-		//s.NoError(err)
 	}
 	s.NoError(err)
 }
@@ -187,8 +137,8 @@ func BenchmarkMatch2(b *testing.B) {
 	s.SetupTest()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		entry := generateLogEntry()
-		indexLogEntry(s.ES, entry)
+		entry := cmd.GenerateLogEntry()
+		cmd.IndexLogEntry(s.ES, entry)
 	}
 }
 
