@@ -147,7 +147,7 @@ var EsCmd = &cobra.Command{
 		opt, err := cmd.Flags().GetString("opt")
 		switch opt {
 		case "bench":
-			g, _ := cmd.Flags().GetInt("g")
+			g, _ := cmd.Flags().GetInt("goroutine")
 
 			benchInput(es, g)
 			return
