@@ -68,6 +68,5 @@ func init() {
 	KafkaCmd.Flags().StringVar(&username, "username", "", "The username for SASL/PLAIN or SASL/SCRAM authentication (Required)")
 	KafkaCmd.Flags().StringVar(&password, "password", "", "The password for SASL/PLAIN or SASL/SCRAM authentication (Required)")
 	KafkaCmd.Flags().IntVar(&consumeMsgsLimit, "limit", 0, "The number of messages to consume (Optional, defaults to 0 for unlimited)")
-	KafkaCmd.Flags().BoolVar(&ping, "ping", false, "The number of messages to consume (Optional, defaults to 0 for unlimited)")
 
 }
