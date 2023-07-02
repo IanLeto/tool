@@ -124,7 +124,7 @@ var EsCmd = &cobra.Command{
 		var (
 			signals = make(chan os.Signal, 1)
 		)
-		viper.AddConfigPath("/Users/ian/go/src/bench")
+		viper.AddConfigPath("./")
 		// 设置配置文件的名称
 		viper.SetConfigName("config")
 		// 设置配置文件的类型
@@ -148,7 +148,7 @@ var EsCmd = &cobra.Command{
 		switch opt {
 		case "bench":
 			g, _ := cmd.Flags().GetInt("g")
-			
+
 			benchInput(es, g)
 			return
 		}
