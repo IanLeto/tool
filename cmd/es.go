@@ -46,14 +46,14 @@ func GenerateLogEntry() LogEntry {
 	return entry
 }
 
-func IndexLogEntry(es *elasticsearch.Client, entry LogEntry) {
+func IndexLogEntry(es *elasticsearch.Client, entry LogEntry, index string) {
 	data, err := json.Marshal(entry)
 	if err != nil {
 		log.Fatalf("Error marshaling log entry: %s", err)
 	}
 
 	req := esapi.IndexRequest{
-		Index:      "log-entries",
+		Index:      index,
 		DocumentID: "",
 		Body:       bytes.NewReader(data),
 		Refresh:    "true",
@@ -103,14 +103,14 @@ func getDocCount(elasticURL string) (int, error) {
 	return totalDocCount, nil
 }
 
-func benchInput(client *elasticsearch.Client, g int) {
+func benchInput(client *elasticsearch.Client, g int, index string) {
 	var wg sync.WaitGroup
 	for i := 0; i < g; i++ {
 		wg.Add(1)
 		go func() {
 			for i := 0; i < 1000; i++ {
 				entry := GenerateLogEntry()
-				IndexLogEntry(client, entry)
+				IndexLogEntry(client, entry, index)
 			}
 			wg.Done()
 		}()
@@ -145,10 +145,12 @@ var EsCmd = &cobra.Command{
 		}
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 		opt, err := cmd.Flags().GetString("opt")
+		index, err := cmd.Flags().GetString("index")
+
 		switch opt {
 		case "bench":
 			g, _ := cmd.Flags().GetInt("goroutine")
-			benchInput(es, g)
+			benchInput(es, g, index)
 			return
 		}
 		url, _ := cmd.Flags().GetString("url")
@@ -180,6 +182,7 @@ func init() {
 	EsCmd.Flags().StringP("url", "v", "0.0.1", "ping")
 	EsCmd.Flags().IntP("duration", "d", 5, "ping")
 	EsCmd.Flags().StringP("opt", "o", "", "ping")
+	EsCmd.Flags().StringP("index", "", "", "索引名称以及别名，必填项")
 	EsCmd.Flags().IntP("goroutine", "g", 100, "ping")
 
 }
