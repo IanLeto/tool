@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/Shopify/sarama v1.38.1
+	github.com/cstockton/go-conv v1.0.0
 	github.com/elastic/go-elasticsearch/v7 v7.17.10
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0

@@ -1,7 +1,6 @@
 package test_test
 
 import (
-	"bench/cmd"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -13,6 +12,7 @@ import (
 	"log"
 	"sync"
 	"testing"
+	"time"
 )
 
 type RelationSuite struct {
@@ -52,8 +52,8 @@ func (s *RelationSuite) TestPutData() {
 		wg.Add(1)
 		go func() {
 			for i := 0; i < 1000; i++ {
-				entry := cmd.GenerateLogEntry()
-				cmd.IndexLogEntry(s.ES, entry)
+				//entry := cmd.GenerateLogEntry()
+				//cmd.IndexLogEntry(s.ES, entry)
 			}
 			wg.Done()
 		}()
@@ -68,8 +68,8 @@ func BenchmarkStr(b *testing.B) {
 	s.SetupTest()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		entry := cmd.GenerateLogEntry()
-		cmd.IndexLogEntry(s.ES, entry)
+		//entry := cmd.GenerateLogEntry()
+		//cmd.IndexLogEntry(s.ES, entry)
 	}
 }
 
@@ -137,14 +137,15 @@ func BenchmarkMatch2(b *testing.B) {
 	s.SetupTest()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		entry := cmd.GenerateLogEntry()
-		cmd.IndexLogEntry(s.ES, entry)
+		//entry := cmd.GenerateLogEntry()
+		//cmd.IndexLogEntry(s.ES, entry)
 	}
 }
 
 // mysql 常用场合
 func (s *RelationSuite) TestMySQL() {
-
+	v := 1689934139594000000
+	fmt.Println(time.Unix(0, int64(v)).Format(time.RFC3339Nano))
 }
 
 func TestConvBench(t *testing.T) {
