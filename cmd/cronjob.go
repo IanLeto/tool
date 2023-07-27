@@ -9,12 +9,16 @@ import (
 var CronJobCmd = &cobra.Command{
 	Use: "cron",
 	Run: func(cmd *cobra.Command, args []string) {
-		ticket := time.NewTicker(2 * time.Second)
+		interval, _ := cmd.Flags().GetInt("interval")
+		size, _ := cmd.Flags().GetInt("size")
+		ticket := time.NewTicker(time.Duration(interval) * time.Second)
 		var i = 1
 		for {
 			select {
 			case <-ticket.C:
-				fmt.Println(i)
+				for i := 0; i < size; i++ {
+					fmt.Println(i)
+				}
 				i += 1
 			}
 		}
@@ -24,4 +28,6 @@ var CronJobCmd = &cobra.Command{
 
 func init() {
 	CronJobCmd.Flags().StringP("stdin", "", "", "")
+	CronJobCmd.Flags().IntP("interval", "", 2, "")
+	CronJobCmd.Flags().IntP("size", "", 10, "")
 }

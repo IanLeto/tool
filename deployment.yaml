@@ -1,20 +1,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-deployment
+  name: tool
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-app
+      app: tool
   template:
     metadata:
       labels:
-        app: my-app
+        app: tool
     spec:
       containers:
-        - name: tool
+        - name: tool1
           image: ianleto/bench:b538e9f
           imagePullPolicy: IfNotPresent # 如果这个image 不存在本地则拉取
           ports:
             - containerPort: 80
+          command:
+            - ./bench
+            - cron --interval 1    # 为 tool1 容器添加特定的参数
+        - name: tool2
+          image: ianleto/bench:b538e9f
+          imagePullPolicy: IfNotPresent # 如果这个image 不存在本地则拉取
+          ports:
+            - containerPort: 80
+          command:
+            - ./bench
+            - cron --interval 5
