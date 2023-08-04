@@ -22,7 +22,6 @@ var FileCmd = &cobra.Command{
 			signals = make(chan os.Signal, 1)
 		)
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-
 		rand.Seed(time.Now().UnixNano())
 		path, _ := cmd.Flags().GetString("path")
 		rate, _ := cmd.Flags().GetInt("rate")

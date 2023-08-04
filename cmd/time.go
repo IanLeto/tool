@@ -20,7 +20,6 @@ func detail() {
 		{"millisecondToTime", "", "毫秒时间戳转CST时间，也就是东八区，北京时间：1690349928961 => 2014-07-10 21:46:40 +0800 CST"},
 		{"microsecondToTime", "", "微秒时间戳转CST时间，也就是东八区，北京时间：1627294747000000 => 2014-07-10 21:46:40 +0800 CST"},
 	}
-
 	// 输出表头
 	fmt.Printf("%-25s%-15s%-15s\n", headers[0], headers[1], headers[2])
 	// 输出分隔线
@@ -35,6 +34,11 @@ var TimeCmd = &cobra.Command{
 	Use: "timeconv",
 	Run: func(cmd *cobra.Command, args []string) {
 		detail()
+		detail, _ := cmd.Flags().GetBool("detail")
+		if detail {
+			fmt.Println("demo 毫秒转CST时间: ./bench timeconv --key millisecondToTime --value 1690349928961")
+			return
+		}
 		var (
 			result time.Time
 		)
@@ -72,10 +76,11 @@ var TimeCmd = &cobra.Command{
 }
 
 func init() {
-	TimeCmd.Flags().String("key", "", "时间转时间戳")
-	TimeCmd.Flags().Int64("value", time.Now().Unix(), "时间转时间戳")
-	TimeCmd.Flags().String("format", "", "时间转时间戳")
+	TimeCmd.Flags().String("key", "", "使用什么转换模式")
+	TimeCmd.Flags().Int64("value", time.Now().Unix(), "被转换的参数,支持如下格式{}")
+	TimeCmd.Flags().String("format", "", "format方式")
 	TimeCmd.Flags().String("opt", "", "时间计算")
 	TimeCmd.Flags().String("params", "", "时间计算加减多少时间")
+	TimeCmd.Flags().Bool("detail", false, "详情")
 
 }
