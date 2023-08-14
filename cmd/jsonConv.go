@@ -12,24 +12,7 @@ import (
 var JsonCmd = &cobra.Command{
 	Use: "jsonconv",
 	Run: func(cmd *cobra.Command, args []string) {
-		jsonStr := `{
-  "policy": {
-    "phases": {
-      "hot": {
-        "min_age": "0ms",
-        "actions": {
-          "rollover": {
-            "max_age": "1d",
-            "max_size": "50gb"
-          },
-          "set_priority": {
-            "priority": 100
-          }
-        }
-      }
-    }
-  }
-}`
+		jsonStr, _ := cmd.Flags().GetString("input")
 
 		removeNewlines, _ := cmd.Flags().GetBool("remove-newlines")
 		addNewlines, _ := cmd.Flags().GetBool("add-newlines")
