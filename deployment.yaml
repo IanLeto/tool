@@ -14,18 +14,14 @@ spec:
     spec:
       containers:
         - name: tool1
-          image: ianleto/bench:b538e9f
+          image: ianleto/bench:548fae3
           imagePullPolicy: IfNotPresent # 如果这个image 不存在本地则拉取
           ports:
             - containerPort: 80
           command:
             - ./bench
-            - cron --interval 1    # 为 tool1 容器添加特定的参数
-        - name: tool2
-          image: ianleto/bench:b538e9f
-          imagePullPolicy: IfNotPresent # 如果这个image 不存在本地则拉取
-          ports:
-            - containerPort: 80
-          command:
-            - ./bench
-            - cron --interval 5
+            - file
+            - "-g=2"
+            - --rate=5
+            - --size=10
+            - --interval=1                # 为 tool1 容器添加特定的参数

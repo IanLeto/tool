@@ -23,32 +23,57 @@ var (
 )
 
 var (
-	opt     string
-	version string
+	opt string
 )
 
 var KafkaCmd = &cobra.Command{
 	Use: "kafka",
 	Run: func(cmd *cobra.Command, args []string) {
-
+		var (
+			client      sarama.Client
+			adminClient sarama.ClusterAdmin
+			consumer    sarama.Consumer
+			group       sarama.ConsumerGroup
+			producer    sarama.AsyncProducer
+			err         error
+		)
+		var (
+			partitions []int32
+			addresses  []string = strings.Split(brokers, ",")
+		)
 		config := sarama.NewConfig()
 		//config.Version = version
 		if username != "" && password != "" {
 			config.Net.SASL.Enable = true
 			config.Net.SASL.User = username
 			config.Net.SASL.Password = password
+			config.ClientID = ""
 		}
-		client, err := sarama.NewClient(strings.Split(brokers, ","), config)
+		// kafka client
+		client, err = sarama.NewClient(addresses, config)
 		if err != nil {
 			log.Fatalf("Error connecting to Kafka brokers: %v", err)
 		}
 		log.Println("Successfully connected to Kafka brokers")
 		defer func() { _ = client.Close() }()
-
-		adminClient, err := sarama.NewClusterAdminFromClient(client)
+		// kafka admin client
+		adminClient, err = sarama.NewClusterAdminFromClient(client)
 		NoErr(err)
-		partitions, err := client.Partitions(topic)
-
+		if topic != "" {
+			partitions, err = client.Partitions(topic)
+		}
+		// kafka consumer
+		consumer, err = sarama.NewConsumerFromClient(client)
+		NoErr(err)
+		defer func() { _ = consumer.Close() }()
+		// kafka consumer group
+		group, err = sarama.NewConsumerGroupFromClient(consumerGroup, client)
+		NoErr(err)
+		defer func() { _ = group.Close() }()
+		// kafka producer
+		producer, err = sarama.NewAsyncProducerFromClient(client)
+		NoErr(err)
+		defer func() { _ = producer.Close() }()
 		switch opt {
 		case "ping":
 			return
@@ -63,6 +88,23 @@ var KafkaCmd = &cobra.Command{
 			NoErr(err)
 			for k := range groups {
 				fmt.Println("group", k)
+			}
+
+		case "list_consumer":
+			consumers, err := adminClient.ListConsumerGroupOffsets(consumerGroup, map[string][]int32{topic: partitions})
+			NoErr(err)
+			for k := range consumers.Blocks["topic"] {
+				fmt.Println("consumer", k)
+			}
+		case "consume":
+
+		case "producer":
+			for i := 0; i < 1000; i++ {
+				time.Sleep(1 * time.Second)
+				producer.Input() <- &sarama.ProducerMessage{
+					Topic: topic,
+					Value: sarama.StringEncoder(fmt.Sprintf("%s test %d", time.Now(), i)),
+				}
 			}
 		case "describe":
 			for {
@@ -92,7 +134,7 @@ func init() {
 	KafkaCmd.Flags().Bool("resp", false, "true 则标准输出响应内容")
 	KafkaCmd.Flags().Bool("listen", false, "监听端口")
 	KafkaCmd.Flags().String("port", "8080", "监听端口")
-	KafkaCmd.Flags().Bool("ping", true, "监听端口")
+	KafkaCmd.Flags().Bool("ping", false, "监听端口")
 	KafkaCmd.Flags().StringVar(&brokers, "brokers", "", "A comma-separated list of Kafka broker URLs (Required)")
 	KafkaCmd.Flags().StringVar(&topic, "topic", "", "The topic to perform the action on (Required for producing and consuming messages)")
 	KafkaCmd.Flags().StringVar(&consumerGroup, "group", "", "The consumer group to join (Required for consuming messages)")

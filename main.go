@@ -32,7 +32,7 @@ func NewHttpClient() {
 }
 
 var RootCmd = &cobra.Command{
-	Use: "app", // 名字同命令本身无关，只是用来生成帮助信息
+	Use: "", // 名字同命令本身无关，只是用来生成帮助信息
 	Run: func(cmd *cobra.Command, args []string) {
 		root := NewRootCmd()
 		fmt.Println(root.Version)

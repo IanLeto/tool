@@ -19,7 +19,9 @@ func detail() {
 		{"timestampToTime", "", "时间戳转CST时间，也就是东八区，北京时间：1405000000 => 2014-07-10 21:46:40 +0800 CST"},
 		{"millisecondToTime", "", "毫秒时间戳转CST时间，也就是东八区，北京时间：1690349928961 => 2014-07-10 21:46:40 +0800 CST"},
 		{"microsecondToTime", "", "微秒时间戳转CST时间，也就是东八区，北京时间：1627294747000000 => 2014-07-10 21:46:40 +0800 CST"},
+		{"necosecondToTime", "", "纳秒时间戳转CST时间，也就是东八区，北京时间：1627294747000000000 => 2014-07-10 21:46:40 +0800 CST"},
 	}
+	
 	// 输出表头
 	fmt.Printf("%-25s%-15s%-15s\n", headers[0], headers[1], headers[2])
 	// 输出分隔线
@@ -62,7 +64,13 @@ var TimeCmd = &cobra.Command{
 			NoErr(err)
 			fmt.Println(time.Unix(0, v*1000))
 			result = time.Unix(0, v*1000)
+		case "necosecondToTime":
+			v, err := conv.Int64(value)
+			NoErr(err)
+			fmt.Println(time.Unix(0, v))
+			result = time.Unix(0, v)
 		}
+
 		if opt == "" {
 			return
 		}

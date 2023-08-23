@@ -6,20 +6,17 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
-	"sync/atomic"
 	"syscall"
 	"time"
 )
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-var FileCmd = &cobra.Command{
-	Use: "file",
+var FakeLogCmd = &cobra.Command{
+	Use: "fakeLog",
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
 			file    *os.File
 			err     error
-			count   int32
+			count   = 0
 			signals = make(chan os.Signal, 1)
 		)
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
@@ -38,7 +35,6 @@ var FileCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
-		var aCount = atomic.AddInt32(&count, 1)
 		for {
 			select {
 			case <-time.NewTicker(time.Duration(interval) * time.Second).C:
@@ -49,8 +45,8 @@ var FileCmd = &cobra.Command{
 							for i := range b {
 								b[i] = letterBytes[rand.Intn(len(letterBytes))]
 							}
-							_, err = file.WriteString(fmt.Sprintf("第%d条%s--%s\n", aCount, content, string(b)))
-							aCount += 1
+							_, err = file.WriteString(fmt.Sprintf("%s--%s\n", content, string(b)))
+							count += 1
 							if err != nil {
 								panic(err)
 							}
@@ -68,13 +64,13 @@ var FileCmd = &cobra.Command{
 }
 
 func init() {
-	FileCmd.Flags().StringP("config", "c", "", "config")
-	FileCmd.Flags().StringP("version", "v", "0.0.1", "ping")
-	FileCmd.Flags().StringP("path", "p", "", "path")
-	FileCmd.Flags().IntP("rate", "", 1, "每秒多少条")
-	FileCmd.Flags().StringP("limit", "", "", "文件大小")
-	FileCmd.Flags().IntP("interval", "", 0, "文件大小")
-	FileCmd.Flags().IntP("goroutine", "g", 1, "开多少并发")
-	FileCmd.Flags().IntP("size", "", 100, "文件大小")
+	FakeLogCmd.Flags().StringP("config", "c", "", "config")
+	FakeLogCmd.Flags().StringP("version", "v", "0.0.1", "ping")
+	FakeLogCmd.Flags().StringP("path", "p", "", "path")
+	FakeLogCmd.Flags().IntP("rate", "", 1, "每秒多少条")
+	FakeLogCmd.Flags().StringP("limit", "", "", "文件大小")
+	FakeLogCmd.Flags().IntP("interval", "", 0, "文件大小")
+	FakeLogCmd.Flags().IntP("goroutine", "g", 1, "开多少并发")
+	FakeLogCmd.Flags().IntP("size", "", 100, "文件大小")
 
 }
