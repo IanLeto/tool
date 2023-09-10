@@ -5,6 +5,7 @@ LABEL maintainer="ianleto"
 #                                INSTALLATION
 ###############################################################################
 #RUN apk add vim
+RUN apk add curl
 WORKDIR      /app
 COPY ./bench    $WORKDIR
 ###############################################################################

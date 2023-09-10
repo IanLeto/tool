@@ -40,6 +40,8 @@ json 去空格:
     命令: ./bench file --content ian --rate 10 --size 10 
     说明: ./bench 使用fakelog生成日志 --content 日志内容 --rate 生成速率 --size 日志大小 path默认是标准输出
 
+    命令: ./bench file --content ian --rate 10 --size 10 --path /tmp/ian.log
+
 #### 使用 time
 
     命令: ./bench timeconv --key timestampToTime --value 1405000000
@@ -47,5 +49,9 @@ json 去空格:
     
     命令: ./bench timeconv --fomat 1 --value "2014-07-10 21:46:40 +0800 CST" 
     说明: ./bench 使用time转化 --format 使用啥模板,这个是CST模板 --target 时间格式
+
+
+#### kafka
+    命令： ./bench kafka --ping
 
 timeconv --key millisecondToTime --value 1690350196498 --opt add --params -1h

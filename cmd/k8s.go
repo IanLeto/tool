@@ -58,7 +58,6 @@ var K8sCmd = &cobra.Command{
 				Name:                       "",
 				GenerateName:               "",
 				Namespace:                  "",
-				SelfLink:                   "",
 				UID:                        "",
 				ResourceVersion:            "",
 				Generation:                 0,

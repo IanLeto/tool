@@ -17,7 +17,6 @@ var (
 	consumerMember   string
 	outFile          string
 	consumeMsgsLimit int
-	ping             bool
 	username         string
 	password         string
 )
@@ -47,7 +46,7 @@ var KafkaCmd = &cobra.Command{
 			config.Net.SASL.Enable = true
 			config.Net.SASL.User = username
 			config.Net.SASL.Password = password
-			config.ClientID = ""
+			config.ClientID = "ian"
 		}
 		// kafka client
 		client, err = sarama.NewClient(addresses, config)
