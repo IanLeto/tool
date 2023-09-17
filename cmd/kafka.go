@@ -96,7 +96,14 @@ var KafkaCmd = &cobra.Command{
 				fmt.Println("consumer", k)
 			}
 		case "consume":
-
+		case "create_topic":
+			err := adminClient.CreateTopic("hello", &sarama.TopicDetail{
+				NumPartitions:     1,
+				ReplicationFactor: 1,
+				ReplicaAssignment: nil,
+				ConfigEntries:     nil,
+			}, true)
+			NoErr(err)
 		case "producer":
 			for i := 0; i < 1000; i++ {
 				time.Sleep(1 * time.Second)
@@ -141,6 +148,7 @@ func init() {
 	KafkaCmd.Flags().StringVar(&outFile, "out", "", "Path to the output file for consumed messages (Optional, defaults to stdout)")
 	KafkaCmd.Flags().StringVar(&username, "username", "", "The username for SASL/PLAIN or SASL/SCRAM authentication (Required)")
 	KafkaCmd.Flags().StringVar(&password, "password", "", "The password for SASL/PLAIN or SASL/SCRAM authentication (Required)")
+	KafkaCmd.Flags().StringVar(&opt, "opt", "", "The password for SASL/PLAIN or SASL/SCRAM authentication (Required)")
 	KafkaCmd.Flags().IntVar(&consumeMsgsLimit, "limit", 0, "The number of messages to consume (Optional, defaults to 0 for unlimited)")
 
 }
