@@ -22,6 +22,7 @@ var FileCmd = &cobra.Command{
 			count   int32
 			signals = make(chan os.Signal, 1)
 		)
+
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 		rand.Seed(time.Now().UnixNano())
 		path, _ := cmd.Flags().GetString("path")
@@ -39,9 +40,11 @@ var FileCmd = &cobra.Command{
 			panic(err)
 		}
 		var aCount = atomic.AddInt32(&count, 1)
+		ticker := time.NewTicker(time.Duration(interval) * time.Second)
+		defer ticker.Stop() // 为啥加上这句就可以正常退出了？
 		for {
 			select {
-			case <-time.NewTicker(time.Duration(interval) * time.Second).C:
+			case <-ticker.C:
 				for i := 0; i < g; i++ {
 					go func() {
 						for i := 0; i < rate; i++ {
@@ -58,9 +61,10 @@ var FileCmd = &cobra.Command{
 					}()
 				}
 			case <-signals:
-				fmt.Println("总数:", count)
+				fmt.Println("总数:", aCount)
 				_ = file.Close()
 				os.Exit(0)
+
 			}
 		}
 
@@ -76,5 +80,6 @@ func init() {
 	FileCmd.Flags().IntP("interval", "", 0, "文件大小")
 	FileCmd.Flags().IntP("goroutine", "g", 1, "开多少并发")
 	FileCmd.Flags().IntP("size", "", 100, "文件大小")
+	FileCmd.Flags().StringP("content", "", "i", "文件大小")
 
 }

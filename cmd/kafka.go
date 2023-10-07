@@ -10,6 +10,9 @@ import (
 	"time"
 )
 
+//kafka --brokers 124.222.48.125:9092 --ping --username admin --password admin
+//kafka --brokers localhost:9092 --ping
+
 var (
 	brokers          string
 	topic            string
@@ -74,8 +77,6 @@ var KafkaCmd = &cobra.Command{
 		NoErr(err)
 		defer func() { _ = producer.Close() }()
 		switch opt {
-		case "ping":
-			return
 		case "list_topic":
 			topics, err := client.Topics()
 			NoErr(err)
@@ -88,7 +89,6 @@ var KafkaCmd = &cobra.Command{
 			for k := range groups {
 				fmt.Println("group", k)
 			}
-
 		case "list_consumer":
 			consumers, err := adminClient.ListConsumerGroupOffsets(consumerGroup, map[string][]int32{topic: partitions})
 			NoErr(err)
@@ -105,6 +105,9 @@ var KafkaCmd = &cobra.Command{
 					Value: sarama.StringEncoder(fmt.Sprintf("%s test %d", time.Now(), i)),
 				}
 			}
+		case "create_topic":
+			err = adminClient.CreateTopic("test", &sarama.TopicDetail{}, false)
+			NoErr(err)
 		case "describe":
 			for {
 				select {
@@ -141,6 +144,7 @@ func init() {
 	KafkaCmd.Flags().StringVar(&outFile, "out", "", "Path to the output file for consumed messages (Optional, defaults to stdout)")
 	KafkaCmd.Flags().StringVar(&username, "username", "", "The username for SASL/PLAIN or SASL/SCRAM authentication (Required)")
 	KafkaCmd.Flags().StringVar(&password, "password", "", "The password for SASL/PLAIN or SASL/SCRAM authentication (Required)")
+	KafkaCmd.Flags().StringVar(&opt, "opt", "", "The password for SASL/PLAIN or SASL/SCRAM authentication (Required)")
 	KafkaCmd.Flags().IntVar(&consumeMsgsLimit, "limit", 0, "The number of messages to consume (Optional, defaults to 0 for unlimited)")
 
 }
