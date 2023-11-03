@@ -96,7 +96,14 @@ var KafkaCmd = &cobra.Command{
 				fmt.Println("consumer", k)
 			}
 		case "consume":
-
+		case "create_topic":
+			err := adminClient.CreateTopic("hello", &sarama.TopicDetail{
+				NumPartitions:     1,
+				ReplicationFactor: 1,
+				ReplicaAssignment: nil,
+				ConfigEntries:     nil,
+			}, true)
+			NoErr(err)
 		case "producer":
 			for i := 0; i < 1000; i++ {
 				time.Sleep(1 * time.Second)
