@@ -54,6 +54,7 @@ func init() {
 	RootCmd.AddCommand(cmd.TimeCmd)
 	RootCmd.AddCommand(cmd.JsonCmd)
 	RootCmd.AddCommand(cmd.KafkaCmd)
+	RootCmd.AddCommand(cmd.K8sCmd)
 	// --全称 -简称
 	RootCmd.Flags().StringP("config", "c", "", "config")
 	RootCmd.Flags().StringP("version", "v", "0.0.1", "ping")
