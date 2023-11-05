@@ -96,6 +96,18 @@ var KafkaCmd = &cobra.Command{
 				fmt.Println("consumer", k)
 			}
 		case "consume":
+			consumer, _ := sarama.NewConsumerFromClient(client)
+			for _, i2 := range partitions {
+				mess, err := consumer.ConsumePartition("tes2t", i2, sarama.OffsetOldest)
+				NoErr(err)
+				for {
+					select {
+					case msg := <-mess.Messages():
+						fmt.Println(string(msg.Value))
+					}
+				}
+			}
+
 		case "create_topic":
 			err := adminClient.CreateTopic("hello", &sarama.TopicDetail{
 				NumPartitions:     1,
