@@ -95,7 +95,6 @@ var KafkaCmd = &cobra.Command{
 			for k := range consumers.Blocks["topic"] {
 				fmt.Println("consumer", k)
 			}
-		case "consume":
 		case "create_topic":
 			err := adminClient.CreateTopic("hello", &sarama.TopicDetail{
 				NumPartitions:     1,
@@ -112,9 +111,6 @@ var KafkaCmd = &cobra.Command{
 					Value: sarama.StringEncoder(fmt.Sprintf("%s test %d", time.Now(), i)),
 				}
 			}
-		case "create_topic":
-			err = adminClient.CreateTopic("test", &sarama.TopicDetail{}, false)
-			NoErr(err)
 		case "describe":
 			for {
 				select {

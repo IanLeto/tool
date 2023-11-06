@@ -97,8 +97,9 @@ var K8sCmd = &cobra.Command{
 			ReportingController: "",
 			ReportingInstance:   "",
 		}
+
 		v2, err := json.MarshalIndent(event, "", "  ")
-		fmt.Println(string(v2), err)
+		fmt.Println(111, string(v2), err)
 		var auditEvent = audit.Event{
 			TypeMeta:   metav1.TypeMeta{},
 			Level:      "",
