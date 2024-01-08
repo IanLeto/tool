@@ -1,10 +1,13 @@
 package cmd
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/Shopify/sarama"
 	_ "github.com/Shopify/sarama"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
@@ -27,6 +30,32 @@ var (
 var (
 	opt string
 )
+
+func newTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error) {
+	tlsConfig := tls.Config{}
+
+	// Load CA cert
+	caCert, err := ioutil.ReadFile(caFile)
+	if err != nil {
+		return nil, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+	tlsConfig.RootCAs = caCertPool
+
+	// Load client cert
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, err
+	}
+	tlsConfig.Certificates = []tls.Certificate{cert}
+
+	// Ensure the config uses the system's certificate pool in addition to the CA
+	// provided above
+	tlsConfig.BuildNameToCertificate()
+
+	return &tlsConfig, nil
+}
 
 var KafkaCmd = &cobra.Command{
 	Use: "kafka",
