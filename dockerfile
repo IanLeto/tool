@@ -7,7 +7,7 @@ LABEL maintainer="ianleto"
 #RUN apk add vim
 RUN apk add curl
 WORKDIR      /app
-COPY ./bench    $WORKDIR
+COPY ./tool    $WORKDIR
 ###############################################################################
 #                                   START
 ###############################################################################

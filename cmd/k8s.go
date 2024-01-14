@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/jcmturner/gokrb5/v8/config"
@@ -42,13 +43,13 @@ func NewK8sConn(ctx context.Context, conf *config.Config) *KubeConn {
 var K8sCmd = &cobra.Command{
 	Use: "k8s",
 	Run: func(cmd *cobra.Command, args []string) {
-		conn := NewK8sConn(context.TODO(), nil)
-		events, err := conn.ClientSet.CoreV1().Events("default").List(context.TODO(), metav1.ListOptions{})
-		NoErr(err)
-		for _, item := range events.Items {
-			//item.InvolvedObject
-			fmt.Println(item.InvolvedObject)
-		}
+		//conn := NewK8sConn(context.TODO(), nil)
+		//events, err := conn.ClientSet.CoreV1().Events("default").List(context.TODO(), metav1.ListOptions{})
+		//NoErr(err)
+		//for _, item := range events.Items {
+		//	//item.InvolvedObject
+		//	fmt.Println(item.InvolvedObject)
+		//}
 		var event = v1.Event{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "",
@@ -96,7 +97,9 @@ var K8sCmd = &cobra.Command{
 			ReportingController: "",
 			ReportingInstance:   "",
 		}
-		fmt.Println(event)
+
+		v2, err := json.MarshalIndent(event, "", "  ")
+		fmt.Println(111, string(v2), err)
 		var auditEvent = audit.Event{
 			TypeMeta:   metav1.TypeMeta{},
 			Level:      "",
@@ -105,28 +108,44 @@ var K8sCmd = &cobra.Command{
 			RequestURI: "",
 			Verb:       "",
 			User: v12.UserInfo{
-				Username: "",
-				UID:      "",
-				Groups:   nil,
-				Extra:    nil,
+				Username: "myUser",
+				UID:      "uid123",
+				Groups:   []string{"group1", "group2"},
+				Extra:    map[string]v12.ExtraValue{"extraKey": []string{"extraValue"}},
 			},
 			ImpersonatedUser: &v12.UserInfo{
-				Username: "",
-				UID:      "",
-				Groups:   nil,
-				Extra:    nil,
+				Username: "impersonatedUser",
+				UID:      "uid456",
+				Groups:   []string{"group1", "group2"},
+				Extra:    map[string]v12.ExtraValue{"extraKey": []string{"extraValue"}},
 			},
-			SourceIPs:                nil,
-			UserAgent:                "",
-			ObjectRef:                nil,
-			ResponseStatus:           nil,
+			SourceIPs: []string{"127.0.0.1"},
+			UserAgent: "myUserAgent",
+			ObjectRef: &audit.ObjectReference{
+				Resource:        "",
+				Namespace:       "",
+				Name:            "",
+				UID:             "",
+				APIGroup:        "",
+				APIVersion:      "",
+				ResourceVersion: "",
+				Subresource:     "",
+			},
+			ResponseStatus: &metav1.Status{
+				Status: "Success",
+			},
 			RequestObject:            nil,
 			ResponseObject:           nil,
 			RequestReceivedTimestamp: metav1.MicroTime{}, // 抵达apisever 时间
 			StageTimestamp:           metav1.MicroTime{}, //抵达当前审计阶段时间
-			Annotations:              nil,
+			Annotations:              map[string]string{"annotationKey": "annotationValue"},
 		}
-		fmt.Println(auditEvent)
+
+		v, err := json.MarshalIndent(auditEvent, "", "  ")
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(string(v))
 	},
 }
 

@@ -1,14 +1,20 @@
 package cmd
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/Shopify/sarama"
 	_ "github.com/Shopify/sarama"
 	"github.com/spf13/cobra"
+	"io/ioutil"
 	"log"
 	"strings"
 	"time"
 )
+
+//kafka --brokers 124.222.48.125:9092 --ping --username admin --password admin
+//kafka --brokers localhost:9092 --ping
 
 var (
 	brokers          string
@@ -24,6 +30,32 @@ var (
 var (
 	opt string
 )
+
+func newTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error) {
+	tlsConfig := tls.Config{}
+
+	// Load CA cert
+	caCert, err := ioutil.ReadFile(caFile)
+	if err != nil {
+		return nil, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+	tlsConfig.RootCAs = caCertPool
+
+	// Load client cert
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		return nil, err
+	}
+	tlsConfig.Certificates = []tls.Certificate{cert}
+
+	// Ensure the config uses the system's certificate pool in addition to the CA
+	// provided above
+	tlsConfig.BuildNameToCertificate()
+
+	return &tlsConfig, nil
+}
 
 var KafkaCmd = &cobra.Command{
 	Use: "kafka",
@@ -74,8 +106,6 @@ var KafkaCmd = &cobra.Command{
 		NoErr(err)
 		defer func() { _ = producer.Close() }()
 		switch opt {
-		case "ping":
-			return
 		case "list_topic":
 			topics, err := client.Topics()
 			NoErr(err)
@@ -88,26 +118,12 @@ var KafkaCmd = &cobra.Command{
 			for k := range groups {
 				fmt.Println("group", k)
 			}
-
 		case "list_consumer":
 			consumers, err := adminClient.ListConsumerGroupOffsets(consumerGroup, map[string][]int32{topic: partitions})
 			NoErr(err)
 			for k := range consumers.Blocks["topic"] {
 				fmt.Println("consumer", k)
 			}
-		case "consume":
-			consumer, _ := sarama.NewConsumerFromClient(client)
-			for _, i2 := range partitions {
-				mess, err := consumer.ConsumePartition("tes2t", i2, sarama.OffsetOldest)
-				NoErr(err)
-				for {
-					select {
-					case msg := <-mess.Messages():
-						fmt.Println(string(msg.Value))
-					}
-				}
-			}
-
 		case "create_topic":
 			err := adminClient.CreateTopic("hello", &sarama.TopicDetail{
 				NumPartitions:     1,

@@ -22,6 +22,7 @@ var FileCmd = &cobra.Command{
 			count   int32
 			signals = make(chan os.Signal, 1)
 		)
+
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 		rand.Seed(time.Now().UnixNano())
 		path, _ := cmd.Flags().GetString("path")
@@ -30,6 +31,7 @@ var FileCmd = &cobra.Command{
 		size, _ := cmd.Flags().GetInt("size")
 		interval, _ := cmd.Flags().GetInt("interval")
 		g, _ := cmd.Flags().GetInt("goroutine")
+		duration, _ := cmd.Flags().GetDuration("duration")
 		if path == "" {
 			file = os.Stdout
 		} else {
@@ -39,9 +41,16 @@ var FileCmd = &cobra.Command{
 			panic(err)
 		}
 		var aCount = atomic.AddInt32(&count, 1)
+		ticker := time.NewTicker(time.Duration(interval) * time.Second)
+		defer ticker.Stop()
+
+		// 创建一个定时器，当到达指定的时间后，关闭文件并退出程序
+		timer := time.NewTimer(duration)
+		defer timer.Stop()
+
 		for {
 			select {
-			case <-time.NewTicker(time.Duration(interval) * time.Second).C:
+			case <-ticker.C:
 				for i := 0; i < g; i++ {
 					go func() {
 						for i := 0; i < rate; i++ {
@@ -58,7 +67,11 @@ var FileCmd = &cobra.Command{
 					}()
 				}
 			case <-signals:
-				fmt.Println("总数:", count)
+				fmt.Println("总数:", aCount)
+				_ = file.Close()
+				os.Exit(0)
+			case <-timer.C:
+				fmt.Println("时间已到，总数:", aCount)
 				_ = file.Close()
 				os.Exit(0)
 			}
@@ -76,5 +89,6 @@ func init() {
 	FileCmd.Flags().IntP("interval", "", 0, "文件大小")
 	FileCmd.Flags().IntP("goroutine", "g", 1, "开多少并发")
 	FileCmd.Flags().IntP("size", "", 100, "文件大小")
-
+	FileCmd.Flags().StringP("content", "", "i", "文件大小")
+	FileCmd.Flags().DurationP("duration", "d", 0, "程序运行的时间长度 (例如: 1h10m1s)")
 }
