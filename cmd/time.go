@@ -141,7 +141,6 @@ func init() {
 	TimeCmd.Flags().String("format", "", "format方式,用啥时间模板")
 	TimeCmd.Flags().String("opt", "", "时间计算")
 	TimeCmd.Flags().String("params", "", "时间计算加减多少时间")
-
 	TimeCmd.Flags().Bool("detail", false, "详情")
 	TimeCmd.Flags().String("target", "", "被转换的时间格式")
 
