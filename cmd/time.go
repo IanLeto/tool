@@ -20,6 +20,7 @@ func detail() {
 		{"millisecondToTime", "", "毫秒时间戳转CST时间，也就是东八区，北京时间：1690349928961 => 2014-07-10 21:46:40 +0800 CST"},
 		{"microsecondToTime", "", "微秒时间戳转CST时间，也就是东八区，北京时间：1627294747000000 => 2014-07-10 21:46:40 +0800 CST"},
 		{"necosecondToTime", "", "纳秒时间戳转CST时间，也就是东八区，北京时间：1627294747000000000 => 2014-07-10 21:46:40 +0800 CST"},
+		{"timestampToIOS", "", "时间戳转IOS时间，"},
 		{"", "1", "CST 时间转秒时间戳，也就是东八区，北京时间：2014-07-10 21:46:40 +0800 CST => 1405000000"},
 	}
 
@@ -108,12 +109,18 @@ var TimeCmd = &cobra.Command{
 			NoErr(err)
 			fmt.Println(time.Unix(0, v))
 			result = time.Unix(0, v)
+		case "timestampToIOS":
+			v, err := conv.Int64(value)
+			NoErr(err)
+			fmt.Println(time.Unix(v, 0).Format("2006-01-02T15:04:05.000Z"))
 		}
 		switch format {
 		case "1":
 			t, err := time.Parse("2006-01-02 15:04:05 -0700 MST", target)
 			NoErr(err)
 			fmt.Println("Unix timestamp:", t.Unix())
+		case "ISO8601":
+
 		}
 
 		if opt == "" {
@@ -134,7 +141,6 @@ func init() {
 	TimeCmd.Flags().String("format", "", "format方式,用啥时间模板")
 	TimeCmd.Flags().String("opt", "", "时间计算")
 	TimeCmd.Flags().String("params", "", "时间计算加减多少时间")
-
 	TimeCmd.Flags().Bool("detail", false, "详情")
 	TimeCmd.Flags().String("target", "", "被转换的时间格式")
 
