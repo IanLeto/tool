@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
@@ -39,6 +40,11 @@ var DockerCmd = &cobra.Command{
 					if err != nil {
 						fmt.Sprintf("Error: %v\n", err)
 					}
+					for _, m := range containerJson.Mounts {
+						v, _ := json.MarshalIndent(m, "", "  ")
+						fmt.Println(string(v))
+					}
+
 					fmt.Printf("Container: %v\n", containerJson)
 
 				}
