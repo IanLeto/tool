@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -19,4 +20,14 @@ func MeasureExecutionTime(callback CallbackFunc) {
 	callback()
 	duration := time.Since(startTime)
 	fmt.Printf("代码执行时间: %v\n", duration)
+}
+func ToJSON(input interface{}) string {
+	// Marshal the input into a JSON string
+	jsonBytes, err := json.Marshal(input)
+	if err != nil {
+		// Handle the error, for example, log it and return an empty string with the error
+		return ""
+	}
+	// Convert bytes to string and return
+	return string(jsonBytes)
 }

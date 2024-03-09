@@ -2,19 +2,23 @@ package cmd
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
-	"fmt"
-	"github.com/jcmturner/gokrb5/v8/config"
 	"github.com/spf13/cobra"
-	v12 "k8s.io/api/authentication/v1"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apiserver/pkg/apis/audit"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
+	"os"
+
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	typ "k8s.io/apimachinery/pkg/types"
+	addScheme "k8s.io/client-go/kubernetes/scheme"
+	ctrl "sigs.k8s.io/controller-runtime"
+)
+
+var (
+	setupLog = ctrl.Log.WithName("setup")
 )
 
 type KubeConn struct {
@@ -22,134 +26,75 @@ type KubeConn struct {
 	DynamicClient dynamic.Interface
 }
 
-func NewK8sConn(ctx context.Context, conf *config.Config) *KubeConn {
-	k8sconfig := flag.String("k8sconfig1", "/Users/ian/.kube/configFromFlags", "kubernetes configFromFlags file path")
+// NewK8sConn initializes a connection to a Kubernetes cluster
+func NewK8sConn(ctx context.Context) *KubeConn {
+	k8sconfig := flag.String("k8sconfig", "/Users/ian/.kube/config", "Path to the Kubernetes config file")
 	flag.Parse()
+
 	configFromFlags, err := clientcmd.BuildConfigFromFlags("", *k8sconfig)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error building kubeconfig: %s", err.Error())
 	}
+
 	client, err := kubernetes.NewForConfig(configFromFlags)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error building kubernetes clientset: %s", err.Error())
 	}
+
 	dyClient, err := dynamic.NewForConfig(configFromFlags)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Error building dynamic clientset: %s", err.Error())
 	}
+
 	return &KubeConn{ClientSet: client, DynamicClient: dyClient}
 }
 
-var K8sCmd = &cobra.Command{
-	Use: "k8s",
-	Run: func(cmd *cobra.Command, args []string) {
-		//conn := NewK8sConn(context.TODO(), nil)
-		//events, err := conn.ClientSet.CoreV1().Events("default").List(context.TODO(), metav1.ListOptions{})
-		//NoErr(err)
-		//for _, item := range events.Items {
-		//	//item.InvolvedObject
-		//	fmt.Println(item.InvolvedObject)
-		//}
-		var event = v1.Event{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "",
-				APIVersion: "",
-			},
-			ObjectMeta: metav1.ObjectMeta{ // 事件的标准对象metadata
-				Name:                       "",
-				GenerateName:               "",
-				Namespace:                  "",
-				UID:                        "",
-				ResourceVersion:            "",
-				Generation:                 0,
-				CreationTimestamp:          metav1.Time{},
-				DeletionTimestamp:          nil,
-				DeletionGracePeriodSeconds: nil,
-				Labels:                     nil,
-				Annotations:                nil,
-				OwnerReferences:            nil,
-				Finalizers:                 nil,
-				ManagedFields:              nil,
-			},
-			InvolvedObject: v1.ObjectReference{ // 这个事件对应的资源对象
-				Kind:            "",
-				Namespace:       "",
-				Name:            "",
-				UID:             "",
-				APIVersion:      "",
-				ResourceVersion: "",
-				FieldPath:       "",
-			},
-			Reason:  "",
-			Message: "",
-			Source: v1.EventSource{ //// The component reporting this event. Should be a short machine understandable string.
-				Component: "", // 生成事件的组件
-				Host:      "", // 生成事件的节点
-			},
-			FirstTimestamp:      metav1.Time{}, // 事件首次发生时间
-			LastTimestamp:       metav1.Time{}, // 事件最后一次发生事件
-			Count:               0,
-			Type:                "",
-			EventTime:           metav1.MicroTime{}, // 该事件首次被观察到的时间
-			Series:              nil,
-			Action:              "", // 针对该事件所指向对象的相关动作
-			Related:             nil,
-			ReportingController: "",
-			ReportingInstance:   "",
-		}
+var (
+	scheme = runtime.NewScheme()
 
-		v2, err := json.MarshalIndent(event, "", "  ")
-		fmt.Println(111, string(v2), err)
-		var auditEvent = audit.Event{
-			TypeMeta:   metav1.TypeMeta{},
-			Level:      "",
-			AuditID:    "",
-			Stage:      "",
-			RequestURI: "",
-			Verb:       "",
-			User: v12.UserInfo{
-				Username: "myUser",
-				UID:      "uid123",
-				Groups:   []string{"group1", "group2"},
-				Extra:    map[string]v12.ExtraValue{"extraKey": []string{"extraValue"}},
-			},
-			ImpersonatedUser: &v12.UserInfo{
-				Username: "impersonatedUser",
-				UID:      "uid456",
-				Groups:   []string{"group1", "group2"},
-				Extra:    map[string]v12.ExtraValue{"extraKey": []string{"extraValue"}},
-			},
-			SourceIPs: []string{"127.0.0.1"},
-			UserAgent: "myUserAgent",
-			ObjectRef: &audit.ObjectReference{
-				Resource:        "",
-				Namespace:       "",
-				Name:            "",
-				UID:             "",
-				APIGroup:        "",
-				APIVersion:      "",
-				ResourceVersion: "",
-				Subresource:     "",
-			},
-			ResponseStatus: &metav1.Status{
-				Status: "Success",
-			},
-			RequestObject:            nil,
-			ResponseObject:           nil,
-			RequestReceivedTimestamp: metav1.MicroTime{}, // 抵达apisever 时间
-			StageTimestamp:           metav1.MicroTime{}, //抵达当前审计阶段时间
-			Annotations:              map[string]string{"annotationKey": "annotationValue"},
-		}
+	// K8sCmd represents the base command when called without any subcommands
+	K8sCmd = &cobra.Command{
+		Use:   "k8s",
+		Short: "K8s is a CLI for managing Kubernetes clusters",
+		Long: `K8s is a CLI application for managing Kubernetes clusters,
+providing user-friendly interactions for complex operations.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			// Do Stuff Here
+			log.Println("K8s command called")
+			ctx := context.Background()
+			ctrl.Log.WithName("controller-runtime").Info("K8s command called")
 
-		v, err := json.MarshalIndent(auditEvent, "", "  ")
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(string(v))
-	},
-}
+			// Setup a Manager
+			mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+				Scheme: runtime.NewScheme(),
+			})
+			NoErr(err)
+			client := mgr.GetClient()
+			err = client.Get(ctx, typ.NamespacedName{Name: os.Getenv("NODE_NAME")}, &corev1.Node{})
+			NoErr(err)
+
+			if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+				setupLog.Error(err, "problem running manager")
+				return
+			}
+
+		},
+	}
+)
 
 func init() {
-	K8sCmd.Flags().String("port", "8080", "监听端口")
+	// Initialize scheme
+	if err := addScheme.AddToScheme(scheme); err != nil {
+		log.Fatalf("Error adding to scheme: %s", err.Error())
+	}
 
+	// Define flags for the K8sCmd
+	K8sCmd.PersistentFlags().String("k8sconfig", "/Users/ian/.kube/config", "Path to the Kubernetes config file")
+	K8sCmd.Flags().StringP("port", "p", "8080", "Port to listen on")
+	K8sCmd.Flags().StringP("address", "a", "", "Address to bind to")
+
+	// Add the K8sCmd to the Cobra root command
+	// Here you would add the root command if you have one
+	// For example, if you have a rootCmd representing the entry point of your application, you would add K8sCmd to it:
+	// rootCmd.AddCommand(K8sCmd)
 }
