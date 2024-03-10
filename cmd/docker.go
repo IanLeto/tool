@@ -54,7 +54,6 @@ var DockerCmd = &cobra.Command{
 				fmt.Printf("挂载点: %v, 挂载源: %v\n", destination, mounts[destination])
 
 			}
-
 		}
 
 		for {
@@ -75,9 +74,7 @@ var DockerCmd = &cobra.Command{
 						v, _ := json.MarshalIndent(m, "", "  ")
 						fmt.Println(string(v))
 					}
-
 					fmt.Printf("Container: %v\n", containerJson)
-
 				}
 
 			}
