@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -35,6 +36,15 @@ var FileCmd = &cobra.Command{
 		if path == "" {
 			file = os.Stdout
 		} else {
+			dir := filepath.Dir(path)
+
+			// 检查目录是否存在
+			if _, err := os.Stat(dir); os.IsNotExist(err) {
+				// 目录不存在，创建目录
+				err := os.MkdirAll(dir, 0755) // 使用 MkdirAll 递归创建所需的所有父目录
+				NoErr(err)
+			}
+
 			file, err = os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
 		}
 		if err != nil {
