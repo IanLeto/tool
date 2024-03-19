@@ -9,11 +9,6 @@ import (
 	"strings"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "sysinfo",
-	Short: "sysinfo is a CLI for system information",
-}
-
 var processCmd = &cobra.Command{
 	Use:   "process",
 	Short: "List processes with optional name filtering",
@@ -96,6 +91,5 @@ func isNumeric(s string) bool {
 }
 func init() {
 	processCmd.Flags().StringP("name", "n", "", "Filter processes by name")
-	rootCmd.AddCommand(processCmd)
-	rootCmd.AddCommand(filesCmd)
+
 }
