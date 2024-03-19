@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/suite"
 	"log"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -146,6 +147,11 @@ func BenchmarkMatch2(b *testing.B) {
 func (s *RelationSuite) TestMySQL() {
 	v := 1689934139594000000
 	fmt.Println(time.Unix(0, int64(v)).Format(time.RFC3339Nano))
+}
+
+func (s *RelationSuite) TestDemoL() {
+	a := "xc/ajif/*.log"
+	fmt.Println(filepath.Dir(a))
 }
 
 func TestConvBench(t *testing.T) {

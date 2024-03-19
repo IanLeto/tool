@@ -44,6 +44,7 @@ func main() {
 	if err := RootCmd.Execute(); err != nil {
 		panic(err)
 	}
+
 }
 
 func init() {
