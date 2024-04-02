@@ -1,9 +1,5 @@
-{"Id":"0ecd6e178ea0b3f6d6f1bf80eecca2a9cca0e59148deecdec0ad72ac7cc288f4","Names":["/k8s_coredns_coredns-5d78c9869d-d7g9d_kube-system_e5704238-abaf-4315-939a-a812e4f67586_33"],"Image":"sha256:ead0a4a53df89fd173874b46093b6e62d8c72967bbf606d672c9e8c9b601a4fc","ImageID":"sha256:ead0a4a53df89fd173874b
-  46093b6e62d8c72967bbf606d672c9e8c9b601a4fc","Command":"/coredns -conf /etc/coredns/Corefile","Created":1709960210,"Ports":[],"Labels":{"annotation.io.kubernetes.container.hash":"264e7db0","annotation.io.kubernetes.container.ports":"[{\"name\":\"dns\",\"containerPort\":53,\"protocol\":\"UDP\"},{\"name\":\"dn
-  s-tcp\",\"containerPort\":53,\"protocol\":\"TCP\"},{\"name\":\"metrics\",\"containerPort\":9153,\"protocol\":\"TCP\"}]","annotation.io.kubernetes.container.restartCount":"33","annotation.io.kubernetes.container.terminationMessagePath":"/dev/termination-log","annotation.io.kubernetes.container.terminationMes
-  sagePolicy":"File","annotation.io.kubernetes.pod.terminationGracePeriod":"30","io.kubernetes.container.logpath":"/var/log/pods/kube-system_coredns-5d78c9869d-d7g9d_e5704238-abaf-4315-939a-a812e4f67586/coredns/33.log","io.kubernetes.container.name":"coredns","io.kubernetes.docker.type":"container","io.kubern
-  etes.pod.name":"coredns-5d78c9869d-d7g9d","io.kubernetes.pod.namespace":"kube-system","io.kubernetes.pod.uid":"e5704238-abaf-4315-939a-a812e4f67586","io.kubernetes.sandbox.id":"ce6e45630f6e89dcb22b509e7ce495c8f00e73460cc2b141f0fefc7f6232c4c0"},"State":"running","Status":"Up 3 hours","HostConfig":{"NetworkMo
-  de":"container:ce6e45630f6e89dcb22b509e7ce495c8f00e73460cc2b141f0fefc7f6232c4c0"},"NetworkSettings":{"Networks":{}},"Mounts":[{"Type":"bind","Source":"/var/lib/kubelet/pods/e5704238-abaf-4315-939a-a812e4f67586/containers/coredns/7eb0ee6b","Destination":"/dev/termination-log","Mode":"","RW":true,"Propagation
-  ":"rprivate"},{"Type":"bind","Source":"/var/lib/kubelet/pods/e5704238-abaf-4315-939a-a812e4f67586/volumes/kubernetes.io~configmap/config-volume","Destination":"/etc/coredns","Mode":"ro","RW":false,"Propagation":"rprivate"},{"Type":"bind","Source":"/var/lib/kubelet/pods/e5704238-abaf-4315-939a-a812e4f67586/e
-  tc-hosts","Destination":"/etc/hosts","Mode":"","RW":true,"Propagation":"rprivate"},{"Type":"bind","Source":"/var/lib/kubelet/pods/e5704238-abaf-4315-939a-a812e4f67586/volumes/kubernetes.io~projected/kube-api-access-qglcp","Destination":"/var/run/secrets/kubernetes.io/serviceaccount","Mode":"ro","RW":false,"
-  Propagation":"rprivate"}]},
+{
+  "metadata": {
+    "name": "test"
+  }
+}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"time"
 )
 
@@ -30,4 +31,12 @@ func ToJSON(input interface{}) string {
 	}
 	// Convert bytes to string and return
 	return string(jsonBytes)
+}
+
+func ToYAML(input interface{}) (string, error) {
+	data, err := yaml.Marshal(input)
+	if err != nil {
+		return "", err
+	}
+	return string(data), nil
 }
