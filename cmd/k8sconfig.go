@@ -33,6 +33,10 @@ type CustomContext struct {
 	// 忽略不需要的字段
 	// Extensions               map[string]interface{} `yaml:"-"`
 }
+type NamedCluster struct {
+	Name    string        `yaml:"name"`
+	Cluster CustomCluster `yaml:"cluster"`
+}
 
 var KubeYaml = &cobra.Command{
 	Use: "KubeYaml",
@@ -56,14 +60,14 @@ var KubeYaml = &cobra.Command{
 		kubeconfig := struct {
 			Kind           string                   `yaml:"kind"`
 			APIVersion     string                   `yaml:"apiversion"`
-			Clusters       map[string]CustomCluster `yaml:"clusters"`
+			Clusters       []NamedCluster           `yaml:"clusters"`
 			AuthInfos      map[string]*api.AuthInfo `yaml:"authinfos"`
 			Contexts       map[string]CustomContext `yaml:"contexts"`
 			CurrentContext string                   `yaml:"currentcontext"`
 		}{
 			Kind:           "config",
 			APIVersion:     "v1",
-			Clusters:       map[string]CustomCluster{},
+			Clusters:       []NamedCluster{},
 			AuthInfos:      nil,
 			Contexts:       map[string]CustomContext{},
 			CurrentContext: "",
@@ -71,10 +75,12 @@ var KubeYaml = &cobra.Command{
 
 		for _, item := range clusters.Items {
 			clusterName := item.Metadata.Name
-			kubeconfig.Clusters[clusterName] = CustomCluster{
-				Server:                   "https://api." + clusterName + ".com",
-				CertificateAuthorityData: []byte(""),
-			}
+			kubeconfig.Clusters = append(kubeconfig.Clusters, NamedCluster{
+				Name: clusterName,
+				Cluster: CustomCluster{
+					Server: "https://api." + clusterName + ".com",
+				},
+			})
 			kubeconfig.Contexts[clusterName] = CustomContext{
 				Cluster:   clusterName,
 				AuthInfo:  "k0110",
