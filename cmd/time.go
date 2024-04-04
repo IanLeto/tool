@@ -13,15 +13,10 @@ var (
 	value string
 )
 
-func detail() {
+func showDetail() {
 	headers := []string{"OPT", "Format", "干啥的"}
 	data := [][]string{
-		{"timestampToTime", "", "时间戳转CST时间，也就是东八区，北京时间：1405000000 => 2014-07-10 21:46:40 +0800 CST"},
-		{"millisecondToTime", "", "毫秒时间戳转CST时间，也就是东八区，北京时间：1690349928961 => 2014-07-10 21:46:40 +0800 CST"},
-		{"microsecondToTime", "", "微秒时间戳转CST时间，也就是东八区，北京时间：1627294747000000 => 2014-07-10 21:46:40 +0800 CST"},
-		{"necosecondToTime", "", "纳秒时间戳转CST时间，也就是东八区，北京时间：1627294747000000000 => 2014-07-10 21:46:40 +0800 CST"},
-		{"timestampToIOS", "", "时间戳转IOS时间，"},
-		{"", "1", "CST 时间转秒时间戳，也就是东八区，北京时间：2014-07-10 21:46:40 +0800 CST => 1405000000"},
+		{"", "", "输入时间戳，转换成CST时间"},
 	}
 
 	// 输出表头
@@ -32,34 +27,6 @@ func detail() {
 	fmt.Println("时间格式说明:")
 	t := time.Now()
 	// 打印 RFC3339 格式的时间 互联网标准时间
-	fmt.Println("互联网标准时间", t.Format(time.RFC3339))
-
-	// 打印 ANSIC 格式的时间 美国标准时间
-	fmt.Println(t.Format(time.ANSIC))
-
-	// 打印 UnixDate 格式的时间
-	fmt.Println(t.Format(time.UnixDate))
-
-	// 打印 RubyDate 格式的时间
-	fmt.Println(t.Format(time.RubyDate))
-
-	// 打印 RFC822 格式的时间
-	fmt.Println(t.Format(time.RFC822))
-
-	// 打印 RFC822Z 格式的时间
-	fmt.Println(t.Format(time.RFC822Z))
-
-	// 打印 RFC850 格式的时间
-	fmt.Println(t.Format(time.RFC850))
-
-	// 打印 RFC1123 格式的时间
-	fmt.Println(t.Format(time.RFC1123))
-
-	// 打印 RFC1123Z 格式的时间
-	fmt.Println(t.Format(time.RFC1123Z))
-
-	// 打印 RFC3339Nano 格式的时间
-	fmt.Println(t.Format(time.RFC3339Nano))
 
 	// 打印 Kitchen 格式的时间
 	fmt.Println(t.Format(time.Kitchen))
@@ -73,46 +40,56 @@ func detail() {
 var TimeCmd = &cobra.Command{
 	Use: "timeconv",
 	Run: func(cmd *cobra.Command, args []string) {
-		detail()
 		detail, _ := cmd.Flags().GetBool("detail")
 		if detail {
-			fmt.Println("demo 毫秒转CST时间: ./bench timeconv --key millisecondToTime --value 1690349928961")
+			//showDetail()
+			fmt.Println("任意时间戳转CST时间: ./iantool timeconv --value 1690349928961")
+			fmt.Println("es 转秒时间戳: ./iantool timeconv --opt es --target 2020-03-03T06:11:19.123456Z")
 			return
 		}
 		var (
 			result time.Time
 		)
-		key, _ := cmd.Flags().GetString("key")
 		value, _ := cmd.Flags().GetInt64("value")
 		opt, _ := cmd.Flags().GetString("opt")
-		params, _ := cmd.Flags().GetString("params")
 		format, _ := cmd.Flags().GetString("format")
 		target, _ := cmd.Flags().GetString("target")
-		switch key {
-		case "timestampToTime":
-			v, err := conv.Int64(value)
+		switch opt {
+		case "es":
+			t, err := time.Parse(time.RFC3339, target)
 			NoErr(err)
-			fmt.Println(time.Unix(v, 0))
-			result = time.Unix(v, 0)
-		case "millisecondToTime":
-			v, err := conv.Int64(value)
-			NoErr(err)
-			fmt.Println(time.Unix(0, v*1000000))
-			result = time.Unix(0, v*1000000)
-		case "microsecondToTime":
-			v, err := conv.Int64(value)
-			NoErr(err)
-			fmt.Println(time.Unix(0, v*1000))
-			result = time.Unix(0, v*1000)
-		case "necosecondToTime":
-			v, err := conv.Int64(value)
-			NoErr(err)
-			fmt.Println(time.Unix(0, v))
-			result = time.Unix(0, v)
-		case "timestampToIOS":
-			v, err := conv.Int64(value)
-			NoErr(err)
-			fmt.Println(time.Unix(v, 0).Format("2006-01-02T15:04:05.000Z"))
+			fmt.Println(t.Unix())
+			return
+
+		default:
+			precision := ""
+			numDigits := len(fmt.Sprint(value))
+			switch numDigits {
+			case 10:
+				precision = "second"
+				v, err := conv.Int64(value)
+				NoErr(err)
+				fmt.Println(time.Unix(v, 0), "精度:", precision)
+				result = time.Unix(v, 0)
+			case 13:
+				precision = "millisecond"
+				v, err := conv.Int64(value)
+				NoErr(err)
+				fmt.Println(time.Unix(0, v*1000000), "精度:", precision)
+				result = time.Unix(0, v*1000000)
+			case 16:
+				precision = "microsecond"
+				v, err := conv.Int64(value)
+				NoErr(err)
+				fmt.Println(time.Unix(0, v*1000), "精度:", precision)
+				result = time.Unix(0, v*1000)
+			case 19:
+				precision = "nanosecond"
+				v, err := conv.Int64(value)
+				NoErr(err)
+				fmt.Println(time.Unix(0, v), "精度:", precision)
+				result = time.Unix(0, v)
+			}
 		}
 		switch format {
 		case "1":
@@ -120,18 +97,22 @@ var TimeCmd = &cobra.Command{
 			NoErr(err)
 			fmt.Println("Unix timestamp:", t.Unix())
 		case "ISO8601":
+		case "showDetail":
 
+		default:
+			fmt.Println("RFC3339", result.Format(time.RFC3339))
+			// 打印 ANSIC 格式的时间 美国标准时间
+			fmt.Println(result.Format(time.ANSIC), ">>>>美国标准时间")
+			fmt.Println(result.Format(time.UnixDate), ">>>>UnixDate")
+			fmt.Println(result.Format(time.RubyDate), ">>>>RubyDate")
+			fmt.Println(result.Format(time.RFC822), ">>>>RFC822")
+			fmt.Println(result.Format(time.RFC822Z), ">>>>RFC822Z")
+			fmt.Println(result.Format(time.RFC850), ">>>>RFC850")
+			fmt.Println(result.Format(time.RFC1123), ">>>>RFC1123")
+			fmt.Println(result.Format(time.RFC1123Z), ">>>>RFC1123Z")
+			fmt.Println(result.Format(time.RFC3339Nano), ">>>>RFC3339Nano")
 		}
 
-		if opt == "" {
-			return
-		}
-		switch opt {
-		case "add":
-			duration, err := time.ParseDuration(params)
-			NoErr(err)
-			fmt.Println(result.Add(duration))
-		}
 	},
 }
 

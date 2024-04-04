@@ -68,7 +68,8 @@ var MysqlCmd = &cobra.Command{
 			}
 			// ...
 		case "raw":
-			db.Exec(raw)
+			db := db.Exec(raw)
+			fmt.Println(ToJSON(db.Value))
 		default:
 			fmt.Println("未知的操作，请检查opt参数")
 		}

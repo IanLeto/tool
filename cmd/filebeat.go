@@ -4,7 +4,6 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/cobra"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -42,8 +41,7 @@ var FilebeatCmd = &cobra.Command{
 						for i := 0; i < rate; i++ {
 							filename := fmt.Sprintf("%stestfile_%d.txt", dir, i)
 							content := []byte("This is a test message.")
-							// Create a new file and write the content to it
-							if err := ioutil.WriteFile(filename, content, 0666); err != nil {
+							if err := os.WriteFile(filename, content, 0666); err != nil {
 								panic(err)
 							}
 
