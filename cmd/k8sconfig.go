@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
-	"k8s.io/client-go/tools/clientcmd/api"
 	"os"
 )
 
@@ -21,21 +20,26 @@ type Clusters struct {
 type CustomCluster struct {
 	Server string `yaml:"server"`
 	// 其他字段你不希望显示的可以使用 `yaml:"-"` 来忽略
-	InsecureSkipTLSVerify    bool   `yaml:"-"`
+	InsecureSkipTLSVerify    bool   `yaml:"insecure-skip-tls-verify"`
 	CertificateAuthorityData []byte `yaml:"-"`
 	// 如果有其他字段也想忽略，也可以加上 `yaml:"-"`
 }
 
 type CustomContext struct {
 	Cluster   string `yaml:"cluster"`
-	AuthInfo  string `yaml:"authinfo"`
+	User      string `yaml:"user"`
 	Namespace string `yaml:"namespace"`
 	// 忽略不需要的字段
 	// Extensions               map[string]interface{} `yaml:"-"`
 }
-type NamedCluster struct {
+type SpecCluster struct {
 	Name    string        `yaml:"name"`
 	Cluster CustomCluster `yaml:"cluster"`
+}
+
+type SpecContext struct {
+	Name    string        `yaml:"name"`
+	Context CustomContext `yaml:"context"`
 }
 
 var KubeYaml = &cobra.Command{
@@ -60,32 +64,35 @@ var KubeYaml = &cobra.Command{
 		kubeconfig := struct {
 			Kind           string                   `yaml:"kind"`
 			APIVersion     string                   `yaml:"apiversion"`
-			Clusters       []NamedCluster           `yaml:"clusters"`
-			AuthInfos      map[string]*api.AuthInfo `yaml:"authinfos"`
-			Contexts       map[string]CustomContext `yaml:"contexts"`
-			CurrentContext string                   `yaml:"currentcontext"`
+			Clusters       []SpecCluster            `yaml:"clusters"`
+			AuthInfos      []map[string]interface{} `yaml:"users"`
+			Contexts       []SpecContext            `yaml:"contexts"`
+			CurrentContext string                   `yaml:"current-context"`
 		}{
-			Kind:           "config",
 			APIVersion:     "v1",
-			Clusters:       []NamedCluster{},
-			AuthInfos:      nil,
-			Contexts:       map[string]CustomContext{},
+			Kind:           "config",
+			Clusters:       []SpecCluster{},
+			AuthInfos:      []map[string]interface{}{},
+			Contexts:       []SpecContext{},
 			CurrentContext: "",
 		}
 
 		for _, item := range clusters.Items {
 			clusterName := item.Metadata.Name
-			kubeconfig.Clusters = append(kubeconfig.Clusters, NamedCluster{
+			kubeconfig.Clusters = append(kubeconfig.Clusters, SpecCluster{
 				Name: clusterName,
 				Cluster: CustomCluster{
 					Server: "https://api." + clusterName + ".com",
 				},
 			})
-			kubeconfig.Contexts[clusterName] = CustomContext{
-				Cluster:   clusterName,
-				AuthInfo:  "k0110",
-				Namespace: "cpaas-system",
-			}
+			kubeconfig.Contexts = append(kubeconfig.Contexts, SpecContext{
+				Name: clusterName,
+				Context: CustomContext{
+					Cluster:   clusterName,
+					User:      "xx",
+					Namespace: "default",
+				},
+			})
 		}
 
 		// 省略的 AuthInfo 结构体初始化...
