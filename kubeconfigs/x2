@@ -1,0 +1,19 @@
+apiVersion: v1
+clusters:
+  - cluster:
+      insecure-skip-tls-verify: true
+      server: https://localhost:6443
+    name: docker-desktop2
+contexts:
+  - context:
+      cluster: docker-desktop2
+      user: docker-desktop
+    name: docker-desktop2
+current-context: docker-desktop2
+kind: Config
+preferences: {}
+users:
+  - name: docker-desktop
+    user:
+      token: 1
+
