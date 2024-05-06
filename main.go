@@ -62,6 +62,7 @@ func init() {
 	RootCmd.AddCommand(cmd.FilebeatCmd)
 	RootCmd.AddCommand(cmd.KubeYaml)
 	RootCmd.AddCommand(cmd.BatchConfigmap)
+	RootCmd.AddCommand(cmd.SpanCmd)
 	// --全称 -简称
 	RootCmd.Flags().StringP("config", "c", "", "config")
 	RootCmd.Flags().StringP("version", "v", "0.0.1", "ping")
