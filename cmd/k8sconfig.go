@@ -19,8 +19,9 @@ type KubeConfig struct {
 	} `yaml:"clusters"`
 	Contexts []struct {
 		Context struct {
-			Cluster string `yaml:"cluster"`
-			User    string `yaml:"user"`
+			Cluster   string `yaml:"cluster"`
+			User      string `yaml:"user"`
+			Namespace string `yaml:"namespace"`
 		} `yaml:"context"`
 		Name string `yaml:"name"`
 	} `yaml:"contexts"`
@@ -107,8 +108,8 @@ var KubeYaml = &cobra.Command{
 }
 
 func init() {
-	KubeYaml.Flags().StringP("dir", "", "", "Read from stdin")
-	KubeYaml.Flags().StringP("output", "", "", "Read from stdin")
+	KubeYaml.Flags().StringP("dir", "", "", "kube 目录")
+	KubeYaml.Flags().StringP("output", "", "", "输出文件")
 
 }
 

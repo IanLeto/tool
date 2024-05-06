@@ -8,6 +8,7 @@ contexts:
   - context:
       cluster: docker-desktop2
       user: docker-desktop
+      namespace: default
     name: docker-desktop2
 current-context: docker-desktop2
 kind: Config
