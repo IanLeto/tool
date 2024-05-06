@@ -111,13 +111,21 @@ var SpanCmd = &cobra.Command{
 
 		// 生成跟踪数据
 		tracer := otel.Tracer("trace-generator")
-		for i := 0; i < 10; i++ {
-			ctx, cancel := context.WithCancelCause(context.Background())
-			_, span := tracer.Start(ctx, fmt.Sprintf("trace-%d", i))
-			generateSpans(ctx, tracer, rand.Intn(5)+1)
-			span.End()
-			cancel(nil)
+		var ticker = time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				for i := 0; i < 10; i++ {
+					ctx, cancel := context.WithCancelCause(context.Background())
+					_, span := tracer.Start(ctx, fmt.Sprintf("trace-%d", i))
+					generateSpans(ctx, tracer, rand.Intn(5)+1)
+					span.End()
+					cancel(nil)
+				}
+			}
 		}
+
 	},
 }
 
