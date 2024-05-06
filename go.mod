@@ -2,7 +2,7 @@ module bench
 
 go 1.21
 
-toolchain go1.22.2
+
 
 require (
 	github.com/Shopify/sarama v1.38.1
