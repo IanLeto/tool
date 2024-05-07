@@ -37,7 +37,6 @@ var FileCmd = &cobra.Command{
 			file = os.Stdout
 		} else {
 			dir := filepath.Dir(path)
-
 			// 检查目录是否存在
 			if _, err := os.Stat(dir); os.IsNotExist(err) {
 				// 目录不存在，创建目录
