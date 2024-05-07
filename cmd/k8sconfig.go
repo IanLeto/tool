@@ -53,14 +53,6 @@ func mergeKubeConfigs(files []string) (*KubeConfig, error) {
 		mergedConfig.Contexts = append(mergedConfig.Contexts, config.Contexts...)
 		mergedConfig.Users = config.Users // Assuming all users are the same
 	}
-
-	// Assuming the first file sets the general structure
-	//if len(files) > 0 {
-	//	firstConfigData, _ := ioutil.ReadFile(files[0])
-	//	err := yaml.Unmarshal(firstConfigData, &mergedConfig)
-	//	NoErr(err)
-	//}
-
 	return &mergedConfig, nil
 }
 
