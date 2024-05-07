@@ -1,0 +1,17 @@
+{
+  "ceb.trace.id": "ceb-trace-id",
+  "ceb.trace.parent.id": "ceb-trace-parent-id",
+  "ceb.trace.span.id": "ceb-trace-span-id",
+  "ceb.trace.sampled": "ceb-trace-sampled",
+  "ceb.trace.flags": "ceb-trace-flags",
+  "timestamp": "",
+  "traceId": "traceId",
+  "spanId": "spanId",
+  "parentSpanId": "parentSpanId",
+  "spanName": "spanName",
+  "spanKind": "spanKind",
+  "request.method": "request.method",
+  "request.url": "request.url",
+  "container.id": "container.id",
+  "container.name": "container.name"
+}
