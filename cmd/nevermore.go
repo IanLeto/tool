@@ -5,10 +5,70 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
+	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
+
+type FileBeatConfig struct {
+	Filebeat struct {
+		Inputs []struct {
+			Type            string            `yaml:"type"`
+			Enabled         bool              `yaml:"enabled"`
+			Paths           []string          `yaml:"paths"`
+			Fields          map[string]string `yaml:"fields"`
+			FieldsUnderRoot bool              `yaml:"fields_under_root"`
+			Encoding        string            `yaml:"encoding"`
+			ExcludeLines    []string          `yaml:"exclude_lines"`
+		} `yaml:"inputs"`
+		Config struct {
+			Modules struct {
+				Path   string `yaml:"path"`
+				Reload struct {
+					Enabled bool   `yaml:"enabled"`
+					Period  string `yaml:"period"`
+				} `yaml:"reload"`
+			} `yaml:"modules"`
+		} `yaml:"config"`
+	} `yaml:"filebeat"`
+	Output struct {
+		Kafka struct {
+			Hosts []string `yaml:"hosts"`
+			Topic string   `yaml:"topic"`
+		} `yaml:"kafka"`
+	} `yaml:"output"`
+}
+
+func readAndParseYAMLFiles(directory string) {
+	files, err := os.ReadDir(directory)
+	if err != nil {
+		log.Fatalf("Failed to read directory: %v", err)
+	}
+
+	for _, file := range files {
+		if filepath.Ext(file.Name()) == ".yaml" || filepath.Ext(file.Name()) == ".yml" {
+			filePath := filepath.Join(directory, file.Name())
+			data, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				log.Printf("Failed to read file %s: %v", file.Name(), err)
+				continue
+			}
+
+			var config FileBeatConfig
+			if err := yaml.Unmarshal(data, &config); err != nil {
+				log.Printf("Failed to unmarshal YAML file %s: %v", file.Name(), err)
+				continue
+			}
+
+			fmt.Printf("Parsed YAML file: %s\n", file.Name())
+			fmt.Printf("Config: %+v\n", config)
+		}
+	}
+}
 
 func getClusterNames() ([]string, error) {
 	cmd := exec.Command("kubectl", "config", "get-contexts", "-o", "name")
