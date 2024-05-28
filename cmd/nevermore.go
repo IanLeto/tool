@@ -186,4 +186,6 @@ func init() {
 	NevermoreCmd.Flags().BoolP("export-configmap", "e", false, "Export ConfigMap to file")
 	NevermoreCmd.Flags().BoolP("deploy-configmap", "d", false, "Deploy ConfigMap from file")
 	NevermoreCmd.Flags().BoolP("read-configmap", "", false, "read当前目录的yaml文件")
+	// nevermore  --export-configmap
+	// nevermore  --read-configmap /tmp
 }
