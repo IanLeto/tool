@@ -66,6 +66,7 @@ func readAndParseYAMLFiles(directory string) {
 
 			fmt.Printf("Parsed YAML file: %s\n", file.Name())
 			fmt.Printf("Config: %+v\n", config)
+			fmt.Println(config.Output.Kafka.Hosts[0])
 		}
 	}
 }
@@ -175,6 +176,8 @@ var NevermoreCmd = &cobra.Command{
 		deployConfigMap, _ := cmd.Flags().GetBool("deploy-configmap")
 		err := executeCommandsOnClusters(command, exportConfigMap, deployConfigMap)
 		cobra.CheckErr(err)
+		dir, _ := cmd.Flags().GetString("read-configmap")
+		readAndParseYAMLFiles(dir)
 	},
 }
 
@@ -182,4 +185,5 @@ func init() {
 	NevermoreCmd.Flags().StringArrayP("command", "c", []string{}, "Commands to execute on each cluster")
 	NevermoreCmd.Flags().BoolP("export-configmap", "e", false, "Export ConfigMap to file")
 	NevermoreCmd.Flags().BoolP("deploy-configmap", "d", false, "Deploy ConfigMap from file")
+	NevermoreCmd.Flags().BoolP("read-configmap", "", false, "read当前目录的yaml文件")
 }
