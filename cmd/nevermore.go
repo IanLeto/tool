@@ -182,6 +182,7 @@ var NevermoreCmd = &cobra.Command{
 }
 
 func init() {
+
 	NevermoreCmd.Flags().StringArrayP("command", "c", []string{}, "Commands to execute on each cluster")
 	NevermoreCmd.Flags().BoolP("export-configmap", "e", false, "Export ConfigMap to file")
 	NevermoreCmd.Flags().BoolP("deploy-configmap", "d", false, "Deploy ConfigMap from file")
