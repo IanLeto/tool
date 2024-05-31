@@ -146,13 +146,9 @@ func executeCommandsOnClusters(commands []string, exportConfigMap bool, deployCo
 
 			for _, cmd := range cmdList {
 				// 分割命令和参数
-				cmdParts := strings.Fields(cmd)
-				if len(cmdParts) == 0 {
-					continue
-				}
 
 				// 执行命令
-				execCmd := exec.Command(cmdParts[0], cmdParts[1:]...)
+				execCmd := exec.Command(cmd)
 				execCmd.Stdout = os.Stdout
 				execCmd.Stderr = os.Stderr
 				err := execCmd.Run()
@@ -187,4 +183,6 @@ func init() {
 	NevermoreCmd.Flags().BoolP("export-configmap", "e", false, "Export ConfigMap to file")
 	NevermoreCmd.Flags().BoolP("deploy-configmap", "d", false, "Deploy ConfigMap from file")
 	NevermoreCmd.Flags().BoolP("read-configmap", "", false, "read当前目录的yaml文件")
+	// nevermore  --export-configmap
+	// nevermore  --read-configmap /tmp
 }
