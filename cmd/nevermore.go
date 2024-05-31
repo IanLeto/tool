@@ -146,13 +146,9 @@ func executeCommandsOnClusters(commands []string, exportConfigMap bool, deployCo
 
 			for _, cmd := range cmdList {
 				// 分割命令和参数
-				cmdParts := strings.Fields(cmd)
-				if len(cmdParts) == 0 {
-					continue
-				}
 
 				// 执行命令
-				execCmd := exec.Command(cmdParts[0], cmdParts[1:]...)
+				execCmd := exec.Command(cmd)
 				execCmd.Stdout = os.Stdout
 				execCmd.Stderr = os.Stderr
 				err := execCmd.Run()
