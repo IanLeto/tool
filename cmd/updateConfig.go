@@ -13,7 +13,7 @@ import (
 
 var k8sclient = func() *kubernetes.Clientset {
 
-	config, err := clientcmd.BuildConfigFromFlags("", "/home/ian/.kube/config")
+	config, err := clientcmd.BuildConfigFromFlags("", "/Users/ian/.kube/config")
 	NoErr(err)
 	clientset, err := kubernetes.NewForConfig(config)
 	NoErr(err)
