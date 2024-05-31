@@ -22,7 +22,6 @@ var JsonCmd = &cobra.Command{
 
 		if removeNewlines {
 			jsonStr = strings.ReplaceAll(jsonStr, "\n", "")
-			jsonStr = strings.ReplaceAll(jsonStr, " ", "")
 		}
 
 		if addNewlines && !removeNewlines {
