@@ -37,21 +37,23 @@ json 去空格:
 
 #### 使用日志生成工具
 
-    命令: ./bench file --content ian --rate 2 --size 10 --interval 2 --goroutine 2 
-    说明: ./bench 使用fakelog生成日志 --content 日志内容 --rate 生成速率 10条/interval --interval 时间间隔 -g 并发数量 --size 日志大小 path默认是标准输出
+    命令: ./iantool file --content ian --rate 2 --size 10 --interval 2 --goroutine 2 
+    说明: ./iantool 使用fakelog生成日志 --content 日志内容 --rate 生成速率 10条/interval --interval 时间间隔 -g 并发数量 --size 日志大小 path默认是标准输出
 
-    命令: ./bench file --content ian --rate 10 --size 10 --path /tmp/ian.log
+    命令: ./iantool file --content ian --rate 10 --size 10 --path /tmp/ian.log
 
 #### 使用 time
 
-    命令: ./bench timeconv --key timestampToTime --value 1405000000
-    说明: ./bench 使用time转化 --key 使用啥转换,这个是时间戳转CST时间 --value 时间戳
+    命令: ./iantool timeconv --key timestampToTime --value 1405000000
+    说明: ./iantool 使用time转化 --key 使用啥转换,这个是时间戳转CST时间 --value 时间戳
     
-    命令: ./bench timeconv --fomat 1 --value "2014-07-10 21:46:40 +0800 CST" 
-    说明: ./bench 使用time转化 --format 使用啥模板,这个是CST模板 --target 时间格式
+    命令: ./iantool timeconv --fomat 1 --value "2014-07-10 21:46:40 +0800 CST" 
+    说明: ./iantool 使用time转化 --format 使用啥模板,这个是CST模板 --target 时间格式
 
 
 #### kafka
-    命令： ./bench kafka --ping
+    命令： ./iantool kafka --ping
+
+#### 
 
 timeconv --key millisecondToTime --value 1690350196498 --opt add --params -1h

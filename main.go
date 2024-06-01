@@ -64,6 +64,7 @@ func init() {
 	RootCmd.AddCommand(cmd.BatchConfigmap)
 	RootCmd.AddCommand(cmd.SpanCmd)
 	RootCmd.AddCommand(cmd.NevermoreCmd)
+	RootCmd.AddCommand(cmd.AgentCmd)
 	// --全称 -简称
 	RootCmd.Flags().StringP("config", "c", "", "config")
 	RootCmd.Flags().StringP("version", "v", "0.0.1", "ping")
