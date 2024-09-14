@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 	"time"
 )
@@ -24,6 +25,7 @@ var (
 	consumeMsgsLimit int
 	username         string
 	password         string
+	auth             string
 )
 
 var (
@@ -68,16 +70,55 @@ var KafkaCmd = &cobra.Command{
 			err         error
 		)
 		var (
+			caPath   string // ca证书
+			certPath string // 用户证书
+			keyPath  string // 用户私钥
+		)
+		var (
+			keyTabPath string // kerberos keytab
+			krb5Path   string // kerberos krb5
+			realm      string // kerberos realm
+		)
+		var (
+			offsetType string
+			offset     int64
+		)
+		var (
 			partitions []int32
 			addresses  []string = strings.Split(brokers, ",")
 		)
 		config := sarama.NewConfig()
-		//config.Version = version
-		if username != "" && password != "" {
+		switch auth {
+		case "tls":
+			ca, err := os.ReadFile(caPath)
+			NoErr(err)
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(ca)
+			config.Net.TLS.Enable = true
+			cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+			NoErr(err)
+			config.Net.TLS.Config = &tls.Config{
+				RootCAs:            caCertPool,
+				InsecureSkipVerify: true,
+				Certificates:       []tls.Certificate{cert},
+			}
+		case "kerberos":
+			config.Net.SASL.Enable = true
+			config.Net.SASL.Mechanism = sarama.SASLTypeGSSAPI
+			config.Net.SASL.GSSAPI = sarama.GSSAPIConfig{
+				AuthType:           sarama.KRB5_KEYTAB_AUTH,
+				KeyTabPath:         keyTabPath,
+				KerberosConfigPath: krb5Path,
+				Realm:              realm,
+				Username:           username,
+				Password:           password,
+			}
+		case "":
+
+		default:
 			config.Net.SASL.Enable = true
 			config.Net.SASL.User = username
 			config.Net.SASL.Password = password
-			config.ClientID = "ian"
 		}
 		// kafka client
 		client, err = sarama.NewClient(addresses, config)
@@ -131,6 +172,30 @@ var KafkaCmd = &cobra.Command{
 				ConfigEntries:     nil,
 			}, true)
 			NoErr(err)
+		case "consumer":
+			switch offsetType {
+			case "newest":
+				offset = sarama.OffsetNewest
+			case "oldest":
+				offset = sarama.OffsetOldest
+			case "time":
+				//offset = time.Now().Unix()
+			default:
+				offset = sarama.OffsetNewest
+			}
+			for _, p := range partitions {
+				var ephemeral = p
+				go func() {
+					partitionConsumer, err := consumer.ConsumePartition(topic, ephemeral, offset)
+					NoErr(err)
+					for {
+						select {
+						case msg := <-partitionConsumer.Messages():
+							fmt.Println(string(msg.Value))
+						}
+					}
+				}()
+			}
 		case "producer":
 			for i := 0; i < 1000; i++ {
 				time.Sleep(1 * time.Second)
