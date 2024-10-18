@@ -1,12 +1,15 @@
 module bench
 
-go 1.20
+go 1.21
+
+toolchain go1.22.4
 
 require (
 	github.com/Shopify/sarama v1.38.1
 	github.com/cstockton/go-conv v1.0.0
 	github.com/docker/docker v24.0.3+incompatible
 	github.com/elastic/go-elasticsearch/v7 v7.17.10
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/go-sql-driver/mysql v1.8.0
 	github.com/jinzhu/gorm v1.9.16
 	github.com/spf13/cobra v1.7.0
@@ -26,6 +29,7 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/distribution v2.8.3+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect

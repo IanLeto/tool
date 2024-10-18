@@ -33,7 +33,7 @@ json 去空格:
 }
 }'
 
-#### 使用 
+#### 使用
 
 #### 使用日志生成工具
 
@@ -50,11 +50,17 @@ json 去空格:
     命令: ./iantool timeconv --fomat 1 --value "2014-07-10 21:46:40 +0800 CST" 
     说明: ./iantool 使用time转化 --format 使用啥模板,这个是CST模板 --target 时间格式
 
-
 #### kafka
-    命令： ./iantool kafka --ping
 
-#### 对每个集群，执行目标文件命令
+    命令： ./iantool kafka --ping 
+    说明: ./iantool 使用kafka测试 --ping 测试kafka是否可用
+    命令： ./iantool kafka --address 
+
+#### http
+
+    命令： ./iantool http --listen true
+
+####  对每个集群，执行目标文件命令
     命令： ./iantool exec --file /tmp/ian.sh --cluster "cluster-1,cluster-2"
 
 timeconv --key millisecondToTime --value 1690350196498 --opt add --params -1h
