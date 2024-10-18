@@ -54,6 +54,7 @@ json 去空格:
 #### kafka
     命令： ./iantool kafka --ping
 
-#### 
+#### 对每个集群，执行目标文件命令
+    命令： ./iantool exec --file /tmp/ian.sh --cluster "cluster-1,cluster-2"
 
 timeconv --key millisecondToTime --value 1690350196498 --opt add --params -1h

@@ -13,30 +13,6 @@ var (
 	value string
 )
 
-func showDetail() {
-	headers := []string{"OPT", "Format", "干啥的"}
-	data := [][]string{
-		{"", "", "输入时间戳，转换成CST时间"},
-	}
-
-	// 输出表头
-	fmt.Printf("%-25s%-15s%-15s\n", headers[0], headers[1], headers[2])
-	// 输出分隔线
-	fmt.Println("----------------------------------------------------------------------------------------")
-	// 输出数据
-	fmt.Println("时间格式说明:")
-	t := time.Now()
-	// 打印 RFC3339 格式的时间 互联网标准时间
-
-	// 打印 Kitchen 格式的时间
-	fmt.Println(t.Format(time.Kitchen))
-
-	for _, row := range data {
-		fmt.Printf("%-25s%-15s%-15s\n", row[0], row[1], row[2])
-	}
-
-}
-
 var TimeCmd = &cobra.Command{
 	Use: "timeconv",
 	Run: func(cmd *cobra.Command, args []string) {
