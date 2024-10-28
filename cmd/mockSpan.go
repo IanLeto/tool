@@ -13,15 +13,44 @@ import (
 	"time"
 )
 
+type Resource struct {
+	CebTraceID   string `json:"ceb.trace.id"`   // ceb.trace.id
+	CebTraceLID  string `json:"ceb.trace.lid"`  // ceb.trace.lid
+	CebTracePPID string `json:"ceb.trace.ppid"` // ceb.trace.ppid
+	SysName      string `json:"sysName"`        // sysName
+	UnitCode     string `json:"unitcode"`       // unitcode
+	InstanceZone string `json:"instanceZone"`   // instanceZone
+	Timestamp    string `json:"timestamp"`      // timestamp
+	LocalApp     string `json:"local.app"`      // local.app
+	TranceID     string `json:"tranceId"`       // tranceId
+	SpanID       string `json:"spanId"`         // spanId
+	BusinessID   string `json:"businessId"`     // businessId
+	SpanKind     string `json:"span.kind"`      // span.kind
+	ResultCode   string `json:"result.code"`    // result.code
+	Time         int    `json:"time"`           // time
+	RemoteHost   string `json:"remote.host"`    // remote.host
+	RemotePort   string `json:"remote.port"`    // remote.port
+	RequestURL   string `json:"request.url"`    // request.url
+	Method       string `json:"method"`         // method
+	Error        string `json:"error"`          // error
+	ReqSizeBytes string `json:"req.size.bytes"` // req.size.bytes
+	Biz          string `json:"biz"`            // biz
+}
+
 var SpanCmd = &cobra.Command{
 	Use: "span",
 	Run: func(cmd *cobra.Command, args []string) {
 		var (
-			file    *os.File
-			err     error
-			count   int32
-			signals = make(chan os.Signal, 1)
+			file     *os.File
+			err      error
+			count    int32
+			signals  = make(chan os.Signal, 1)
+			resource *Resource
 		)
+		origin, err := os.ReadFile("./resource.json")
+		NoErr(err)
+		err = json.Unmarshal(origin, resource)
+		NoErr(err)
 
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 		rand.Seed(time.Now().UnixNano())
@@ -117,6 +146,7 @@ func generateRandomString(n int) string {
 
 func init() {
 	SpanCmd.Flags().StringP("config", "c", "", "config")
+	SpanCmd.Flags().StringP("resource", "s", "", "resource")
 	SpanCmd.Flags().StringP("version", "v", "0.0.1", "ping")
 	SpanCmd.Flags().StringP("path", "p", "", "path")
 	SpanCmd.Flags().IntP("rate", "", 1, "每秒多少条")
