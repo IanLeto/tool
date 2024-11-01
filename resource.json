@@ -1,0 +1,23 @@
+{
+  "ceb.trace.id": "trace-id-123",
+  "ceb.trace.lid": "trace-lid-456",
+  "ceb.trace.ppid": "trace-ppid-789",
+  "sysName": "example-system",
+  "unitcode": "unit-01",
+  "instanceZone": "zone-3",
+  "timestamp": "2024-10-28T10:00:00Z",
+  "local.app": "app-xyz",
+  "tranceId": "trance-abc-123",
+  "spanId": "0.1.0.2",
+  "businessId": "business-001",
+  "span.kind": "server",
+  "result.code": "200",
+  "time": 1730112000,
+  "remote.host": "192.168.1.100",
+  "remote.port": "8080",
+  "request.url": "http://example.com/api/v1/resource",
+  "method": "GET",
+  "error": "",
+  "req.size.bytes": "512",
+  "biz": "core-business"
+}

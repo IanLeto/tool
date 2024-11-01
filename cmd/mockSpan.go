@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"math/rand"
+	"net"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -45,7 +47,7 @@ var SpanCmd = &cobra.Command{
 			err      error
 			count    int32
 			signals  = make(chan os.Signal, 1)
-			resource *Resource
+			resource = &Resource{}
 		)
 		origin, err := os.ReadFile("./resource.json")
 		NoErr(err)
@@ -89,7 +91,7 @@ var SpanCmd = &cobra.Command{
 				for i := 0; i < g; i++ {
 					go func() {
 						for i := 0; i < rate; i++ {
-							data := generateTraceData()
+							data := generateTraceData(*resource)
 							jsonData, _ := json.Marshal(data)
 							_, err = fmt.Fprintf(file, "%s\n", string(jsonData))
 							aCount += 1
@@ -112,36 +114,60 @@ var SpanCmd = &cobra.Command{
 	},
 }
 
-func generateTraceData() map[string]string {
-	traceID := generateRandomString(16)
-	spanID := generateRandomString(16)
-	parentSpanID := generateRandomString(16)
+// generateTraceData 方法
+func generateTraceData(r Resource) Resource {
+	// 生成随机的 span.kind
+	spanKinds := []string{"client", "server"}
+	rand.Seed(time.Now().UnixNano())
+	r.SpanKind = spanKinds[rand.Intn(len(spanKinds))]
 
-	return map[string]string{
-		"ceb.trace.id":        traceID,
-		"ceb.trace.parent.id": parentSpanID,
-		"ceb.trace.span.id":   spanID,
-		"ceb.trace.sampled":   "true",
-		"ceb.trace.flags":     "01",
-		"timestamp":           time.Now().Format(time.RFC3339),
-		"traceId":             traceID,
-		"spanId":              spanID,
-		"parentSpanId":        parentSpanID,
-		"spanName":            generateRandomString(8),
-		"spanKind":            "SERVER",
-		"request.method":      "GET",
-		"request.url":         fmt.Sprintf("http://example.com/%s", generateRandomString(8)),
-		"container.id":        generateRandomString(12),
-		"container.name":      generateRandomString(8),
-	}
+	// 生成随机的 26 位 traceId
+	r.TranceID = generateRandomString(26)
+
+	// 生成类似 "0.1.1.2" 的 spanId
+	r.SpanID = generateRandomSpanID()
+
+	// 生成随机的 IP 地址
+	r.RemoteHost = generateRandomIP()
+
+	// 设置当前时间戳
+	r.Time = int(time.Now().Unix())
+
+	// 设置当前时间为 RFC3339 格式的 timestamp
+	r.Timestamp = time.Now().Format(time.RFC3339)
+
+	// 返回生成的 Resource 实例
+	return r
 }
 
+// 生成随机的 26 位字符串
 func generateRandomString(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	rand.Seed(time.Now().UnixNano())
+	sb := strings.Builder{}
+	for i := 0; i < n; i++ {
+		sb.WriteByte(letters[rand.Intn(len(letters))])
 	}
-	return string(b)
+	return sb.String()
+}
+
+// 生成类似 "0.1.1.2" 格式的随机 spanId
+func generateRandomSpanID() string {
+	parts := make([]string, 4)
+	for i := 0; i < 4; i++ {
+		parts[i] = fmt.Sprintf("%d", rand.Intn(2)) // 0 或 1
+	}
+	return strings.Join(parts, ".")
+}
+
+// 生成随机 IP 地址
+func generateRandomIP() string {
+	ip := make(net.IP, 4)
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < 4; i++ {
+		ip[i] = byte(rand.Intn(256)) // 每个字节范围是0-255
+	}
+	return ip.String()
 }
 
 func init() {

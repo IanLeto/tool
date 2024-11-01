@@ -41,6 +41,7 @@ var RootCmd = &cobra.Command{
 }
 
 func main() {
+
 	if err := RootCmd.Execute(); err != nil {
 		panic(err)
 	}
