@@ -83,7 +83,6 @@ func executeCommandsOnClusters(commands []string) error {
 
 			for _, cmd := range cmdList {
 				// 分割命令和参数
-
 				// 执行命令
 				execCmd := exec.Command(cmd)
 				execCmd.Stdout = os.Stdout
