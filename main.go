@@ -63,7 +63,7 @@ func init() {
 	RootCmd.AddCommand(cmd.KubeYaml)
 	RootCmd.AddCommand(cmd.BatchConfigmap)
 	RootCmd.AddCommand(cmd.SpanCmd)
-	RootCmd.AddCommand(cmd.NevermoreCmd)
+	RootCmd.AddCommand(cmd.ClusterCmd)
 	RootCmd.AddCommand(cmd.AgentCmd)
 	RootCmd.AddCommand(cmd.JSONCmd)
 	// --全称 -简称
