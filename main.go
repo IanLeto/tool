@@ -67,6 +67,7 @@ func init() {
 	RootCmd.AddCommand(cmd.NevermoreCmd)
 	RootCmd.AddCommand(cmd.AgentCmd)
 	RootCmd.AddCommand(cmd.JSONCmd)
+	RootCmd.AddCommand(cmd.DBCmd)
 	// --全称 -简称
 	RootCmd.Flags().StringP("config", "c", "", "config")
 	RootCmd.Flags().StringP("version", "v", "0.0.1", "ping")

@@ -63,4 +63,7 @@ json 去空格:
 ####  对每个集群，执行目标文件命令
     命令： ./iantool exec --file /tmp/ian.sh --cluster "cluster-1,cluster-2"
 
+#### 对某个数据库, 写入假数据
+    命令： ./iantool db --type mysql --host localhost:3306 --user root --password root --database go_ori --table projects --size 100
+
 timeconv --key millisecondToTime --value 1690350196498 --opt add --params -1h
