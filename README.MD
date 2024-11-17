@@ -66,4 +66,9 @@ json 去空格:
 #### 对某个数据库, 写入假数据
     命令： ./iantool db --type mysql --host localhost:3306 --user root --password root --database go_ori --table projects --size 100
 
-timeconv --key millisecondToTime --value 1690350196498 --opt add --params -1h
+#### mock span数据到
+    标准输出
+    命令： ./iantool span span --rate 1 --interval 1 -d 1h
+    es
+    命令： ./iantool span --rate 1 --interval 1 -d 1h --elastic https://localhost:9200 --index span -U elastic -P b0Wg1aTOt9781fzq07SCA07x
+

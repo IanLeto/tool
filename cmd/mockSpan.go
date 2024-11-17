@@ -1,11 +1,18 @@
 package cmd
 
 import (
+	"bytes"
+	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/spf13/cobra"
+	"io"
 	"math/rand"
 	"net"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -139,6 +146,50 @@ type Resource struct {
 
 	RemoteApp string `json:"remote.app,omitempty"`
 }
+type EsV2Conn struct {
+	Client *elasticsearch.Client
+}
+
+func (c *EsV2Conn) Create(index string, body []byte) ([]byte, error) {
+	var (
+		//buf  bytes.Buffer
+		req  = esapi.IndexRequest{}
+		resp *esapi.Response
+		err  error
+	)
+
+	req = esapi.IndexRequest{
+		Index: index,
+		Body:  bytes.NewReader(body),
+	}
+	resp, err = req.Do(context.TODO(), c.Client)
+	if err != nil {
+		goto ERR
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	return io.ReadAll(resp.Body)
+
+ERR:
+	{
+		return nil, err
+	}
+
+}
+func NewEsV2Conn(address, username, password string) *EsV2Conn {
+	client, err := elasticsearch.NewClient(elasticsearch.Config{
+		Addresses: []string{
+			address,
+		},
+		Username: username,
+		Password: password,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		},
+	})
+	NoErr(err)
+	return &EsV2Conn{Client: client}
+}
 
 var SpanCmd = &cobra.Command{
 	Use: "span",
@@ -149,6 +200,7 @@ var SpanCmd = &cobra.Command{
 			count    int32
 			signals  = make(chan os.Signal, 1)
 			resource = &Resource{}
+			esClient *EsV2Conn
 		)
 		origin, err := os.ReadFile("./resource.json")
 		NoErr(err)
@@ -162,6 +214,15 @@ var SpanCmd = &cobra.Command{
 		interval, _ := cmd.Flags().GetInt("interval")
 		g, _ := cmd.Flags().GetInt("goroutine")
 		duration, _ := cmd.Flags().GetDuration("duration")
+
+		index, _ := cmd.Flags().GetString("index")
+		address, _ := cmd.Flags().GetString("elastic")
+		username, _ := cmd.Flags().GetString("username")
+		password, _ := cmd.Flags().GetString("password")
+		if address != "" {
+			esClient = NewEsV2Conn(address, username, password)
+		}
+
 		if path == "" {
 			file = os.Stdout
 		} else {
@@ -191,11 +252,16 @@ var SpanCmd = &cobra.Command{
 						for i := 0; i < rate; i++ {
 							data := generateTraceData(*resource)
 							jsonData, _ := json.Marshal(data)
-							_, err = fmt.Fprintf(file, "%s\n", string(jsonData))
-							aCount += 1
-							if err != nil {
-								panic(err)
+							if address != "" {
+								res, err := esClient.Create(index, jsonData)
+								NoErr(err)
+								fmt.Println(string(res))
+							} else {
+								_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
+								aCount += 1
+								NoErr(err)
 							}
+
 						}
 					}()
 				}
@@ -220,7 +286,7 @@ func generateTraceData(r Resource) Resource {
 	r.SpanKind = spanKinds[rand.Intn(len(spanKinds))]
 
 	// 生成随机的 26 位 traceId
-	r.TranceID = generateRandomString(26)
+	r.TraceId = generateRandomString(26)
 
 	// 生成类似 "0.1.1.2" 的 spanId
 	r.SpanID = generateRandomSpanID()
@@ -229,7 +295,7 @@ func generateTraceData(r Resource) Resource {
 	r.RemoteHost = generateRandomIP()
 
 	// 设置当前时间戳
-	r.Time = int(time.Now().Unix())
+	r.Time = generateRandomTimestamp()
 
 	// 设置当前时间为 RFC3339 格式的 timestamp
 	r.Timestamp = time.Now().Format(time.RFC3339)
@@ -247,6 +313,26 @@ func generateRandomString(n int) string {
 		sb.WriteByte(letters[rand.Intn(len(letters))])
 	}
 	return sb.String()
+}
+
+func generateRandomTimestamp() int64 {
+	// 获取当前时间
+	now := time.Now()
+
+	// 计算一小时前的时间
+	oneHourAgo := now.Add(-time.Hour)
+
+	// 计算一小时内的秒数
+	maxSeconds := int64(time.Hour / time.Second)
+
+	// 生成一个在 [0, maxSeconds) 范围内的随机秒数
+	randomSeconds := rand.Int63n(maxSeconds)
+
+	// 将随机秒数添加到一小时前的时间上，得到近一小时内的随机时间
+	randomTime := oneHourAgo.Add(time.Duration(randomSeconds) * time.Second)
+
+	// 返回随机时间的时间戳
+	return randomTime.Unix()
 }
 
 // 生成类似 "0.1.1.2" 格式的随机 spanId
@@ -277,5 +363,9 @@ func init() {
 	SpanCmd.Flags().StringP("limit", "", "", "文件大小")
 	SpanCmd.Flags().IntP("interval", "", 0, "文件大小")
 	SpanCmd.Flags().IntP("goroutine", "g", 1, "开多少并发")
+	SpanCmd.Flags().StringP("elastic", "e", "", "es地址")
+	SpanCmd.Flags().StringP("index", "i", "", "es地址")
+	SpanCmd.Flags().StringP("password", "P", "", "es密码")
+	SpanCmd.Flags().StringP("username", "U", "", "es用户名")
 	SpanCmd.Flags().DurationP("duration", "d", 0, "程序运行的时间长度 (例如: 1h10m1s)")
 }
