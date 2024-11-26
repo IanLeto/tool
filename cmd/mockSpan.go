@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"github.com/Shopify/sarama"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/spf13/cobra"
@@ -200,7 +201,8 @@ var SpanCmd = &cobra.Command{
 			count    int32
 			signals  = make(chan os.Signal, 1)
 			resource = &Resource{}
-			esClient *EsV2Conn
+			//esClient *EsV2Conn
+			//produer  sarama.SyncProducer
 		)
 		origin, err := os.ReadFile("./resource.json")
 		NoErr(err)
@@ -215,13 +217,20 @@ var SpanCmd = &cobra.Command{
 		g, _ := cmd.Flags().GetInt("goroutine")
 		duration, _ := cmd.Flags().GetDuration("duration")
 
-		index, _ := cmd.Flags().GetString("index")
+		//index, _ := cmd.Flags().GetString("index")
 		address, _ := cmd.Flags().GetString("elastic")
 		username, _ := cmd.Flags().GetString("username")
 		password, _ := cmd.Flags().GetString("password")
-		if address != "" {
-			esClient = NewEsV2Conn(address, username, password)
-		}
+		//if address != "" {
+		//	esClient = NewEsV2Conn(address, username, password)
+		//}
+		//if topic != "" {
+		config := sarama.NewConfig()
+		config.Producer.Return.Successes = true
+		config.Net.SASL.Enable = true
+		config.Net.SASL.User = username
+		config.Net.SASL.Password = password
+		//}
 
 		if path == "" {
 			file = os.Stdout
@@ -252,15 +261,22 @@ var SpanCmd = &cobra.Command{
 						for i := 0; i < rate; i++ {
 							data := generateTraceData(*resource)
 							jsonData, _ := json.Marshal(data)
-							if address != "" {
-								res, err := esClient.Create(index, jsonData)
-								NoErr(err)
-								fmt.Println(string(res))
-							} else {
-								_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
-								aCount += 1
-								NoErr(err)
+							producer, err := sarama.NewSyncProducer([]string{address}, config)
+							NoErr(err)
+							msg := &sarama.ProducerMessage{
+								Topic: topic,
+								Value: sarama.StringEncoder(jsonData),
 							}
+							err = producer.SendMessages([]*sarama.ProducerMessage{msg})
+							//if address != "" {
+							//	res, err := esClient.Create(index, jsonData)
+							//	NoErr(err)
+							//	fmt.Println(string(res))
+							//} else {
+							//	_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
+							//	aCount += 1
+							//	NoErr(err)
+							//}
 
 						}
 					}()
@@ -365,7 +381,9 @@ func init() {
 	SpanCmd.Flags().IntP("goroutine", "g", 1, "开多少并发")
 	SpanCmd.Flags().StringP("elastic", "e", "", "es地址")
 	SpanCmd.Flags().StringP("index", "i", "", "es地址")
-	SpanCmd.Flags().StringP("password", "P", "", "es密码")
-	SpanCmd.Flags().StringP("username", "U", "", "es用户名")
+	SpanCmd.Flags().StringP("password", "P", "", "es/kafka密码")
+	SpanCmd.Flags().StringP("username", "U", "", "es/kafka用户名")
+	SpanCmd.Flags().StringP("topic", "T", "", "kafka topic")
 	SpanCmd.Flags().DurationP("duration", "d", 0, "程序运行的时间长度 (例如: 1h10m1s)")
+
 }
