@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-var k8sclient = func() *kubernetes.Clientset {
+var NewK8sClient = func() *kubernetes.Clientset {
 
 	config, err := clientcmd.BuildConfigFromFlags("", "/home/ian/.kube/config")
 	NoErr(err)
@@ -19,7 +19,7 @@ var k8sclient = func() *kubernetes.Clientset {
 	NoErr(err)
 	return clientset
 
-}()
+}
 
 // getConfigMap 获取指定的 ConfigMap
 func getConfigMap(clientset *kubernetes.Clientset, namespace, name string) (*v1.ConfigMap, error) {
@@ -78,6 +78,7 @@ var BatchConfigmap = &cobra.Command{
 	Use: "update",
 	Run: func(cmd *cobra.Command, args []string) {
 		// Do something
+		var k8sclient = NewK8sClient()
 		l, err := k8sclient.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 		NoErr(err)
 		for _, ns := range l.Items {

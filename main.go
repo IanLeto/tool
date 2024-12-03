@@ -62,10 +62,9 @@ func init() {
 	RootCmd.AddCommand(cmd.MysqlCmd)
 	RootCmd.AddCommand(cmd.FilebeatCmd)
 	RootCmd.AddCommand(cmd.KubeYaml)
-	RootCmd.AddCommand(cmd.BatchConfigmap)
+	//RootCmd.AddCommand(cmd.BatchConfigmap)
 	RootCmd.AddCommand(cmd.SpanCmd)
 	RootCmd.AddCommand(cmd.ClusterCmd)
-	RootCmd.AddCommand(cmd.AgentCmd)
 	RootCmd.AddCommand(cmd.JSONCmd)
 	RootCmd.AddCommand(cmd.DBCmd)
 	// --全称 -简称

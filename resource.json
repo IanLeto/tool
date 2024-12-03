@@ -32,8 +32,9 @@
     "sys-expand-key2": "sys-expand-value2"
   },
   "biz.expand": {
-    "biz-expand-key1": "biz-expand-value1",
-    "biz-expand-key2": "biz-expand-value2"
+    "trans_channel": "O999",
+    "trans_type_code": "1001",
+    "ret_code": "AAAA"
   },
   "db.type": "mysql",
   "database.name": "order_db",

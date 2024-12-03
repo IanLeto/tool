@@ -261,22 +261,22 @@ var SpanCmd = &cobra.Command{
 						for i := 0; i < rate; i++ {
 							data := generateTraceData(*resource)
 							jsonData, _ := json.Marshal(data)
-							producer, err := sarama.NewSyncProducer([]string{address}, config)
-							NoErr(err)
-							msg := &sarama.ProducerMessage{
-								Topic: topic,
-								Value: sarama.StringEncoder(jsonData),
-							}
-							err = producer.SendMessages([]*sarama.ProducerMessage{msg})
-							//if address != "" {
-							//	res, err := esClient.Create(index, jsonData)
-							//	NoErr(err)
-							//	fmt.Println(string(res))
-							//} else {
-							//	_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
-							//	aCount += 1
-							//	NoErr(err)
+							//producer, err := sarama.NewSyncProducer([]string{address}, config)
+							//NoErr(err)
+							//msg := &sarama.ProducerMessage{
+							//	Topic: topic,
+							//	Value: sarama.StringEncoder(jsonData),
 							//}
+							//err = producer.SendMessages([]*sarama.ProducerMessage{msg})
+							if address != "" {
+								//res, err := esClient.Create(index, jsonData)
+								//NoErr(err)
+								//fmt.Println(string(res))
+							} else {
+								_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
+								aCount += 1
+								NoErr(err)
+							}
 
 						}
 					}()
