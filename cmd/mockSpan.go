@@ -216,7 +216,6 @@ var SpanCmd = &cobra.Command{
 		interval, _ := cmd.Flags().GetInt("interval")
 		g, _ := cmd.Flags().GetInt("goroutine")
 		duration, _ := cmd.Flags().GetDuration("duration")
-
 		//index, _ := cmd.Flags().GetString("index")
 		address, _ := cmd.Flags().GetString("elastic")
 		username, _ := cmd.Flags().GetString("username")
