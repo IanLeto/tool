@@ -69,6 +69,8 @@ json 去空格:
 #### mock span数据到
     标准输出
     命令： ./iantool span span --rate 1 --interval 1 -d 1h
+    文件输出
+    命令： ./iantool span span --rate 1 --limit 10 --interval 2 --duration 1h --path /Users/ian/go/src/goOrigin/test.json
     es
     命令： ./iantool span --rate 1 --interval 1 -d 1h --elastic https://localhost:9200 --index span -U elastic -P b0Wg1aTOt9781fzq07SCA07x
 
