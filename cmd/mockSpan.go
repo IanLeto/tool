@@ -144,6 +144,8 @@ type Resource struct {
 	RemotePodId string `json:"remote.podId,omitempty"`
 
 	RemoteApp string `json:"remote.app,omitempty"`
+
+	Trans map[string]interface{} `json:"trans,omitempty"`
 }
 type EsV2Conn struct {
 	Client *elasticsearch.Client

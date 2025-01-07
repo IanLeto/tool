@@ -2,7 +2,7 @@
   "ceb.trace.gid": "gid-987654321",
   "ceb.trace.lid": "lid-123456789",
   "ceb.trace.pid": "pid-543210987",
-  "sysName": "order-system",
+  "sysName": "iantool",
   "unitcode": "unit-02",
   "instanceZone": "zone-1",
   "timestamp": "2023-06-03T14:30:00Z",
@@ -12,10 +12,10 @@
   "businessId": "order-123456",
   "span.kind": "client",
   "result.code": "201",
-  "biz.expand": {
+  "trans": {
     "trans_channel": "O999",
     "trans_type_code": "1001",
     "ret_code": "AAAA",
-    "self_test": 123
+    "trans_level": "1lv"
   }
 }
