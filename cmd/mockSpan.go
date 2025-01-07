@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"github.com/Shopify/sarama"
@@ -13,7 +12,6 @@ import (
 	"io"
 	"math/rand"
 	"net"
-	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -150,6 +148,14 @@ type Resource struct {
 type EsV2Conn struct {
 	Client *elasticsearch.Client
 }
+type SpanMockParams struct {
+	Mode     string
+	Topic    string
+	Brokers  string
+	Address  string
+	Username string
+	Password string `json:"password,omitempty"`
+}
 
 func (c *EsV2Conn) Create(index string, body []byte) ([]byte, error) {
 	var (
@@ -177,20 +183,24 @@ ERR:
 	}
 
 }
-func NewEsV2Conn(address, username, password string) *EsV2Conn {
-	client, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{
-			address,
-		},
-		Username: username,
-		Password: password,
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		},
-	})
-	NoErr(err)
-	return &EsV2Conn{Client: client}
-}
+
+//func NewEsV2Conn() *EsV2Conn {
+//	var (
+//		conn = &EsV2Conn{}
+//		err  error
+//	)
+//
+//	client, err := elasticsearch7.NewClient(elasticsearch7.Config{
+//		Addresses: []string{
+//			conf.Address,
+//		},
+//	})
+//	if err != nil {
+//		panic(err)
+//	}
+//	conn.Client = client
+//	return conn
+//}
 
 var SpanCmd = &cobra.Command{
 	Use: "span",
@@ -202,7 +212,7 @@ var SpanCmd = &cobra.Command{
 			signals  = make(chan os.Signal, 1)
 			resource = &Resource{}
 			//esClient *EsV2Conn
-			//produer  sarama.SyncProducer
+			//producer sarama.SyncProducer
 		)
 		origin, err := os.ReadFile("./resource.json")
 		NoErr(err)
@@ -217,9 +227,10 @@ var SpanCmd = &cobra.Command{
 		g, _ := cmd.Flags().GetInt("goroutine")
 		duration, _ := cmd.Flags().GetDuration("duration")
 		//index, _ := cmd.Flags().GetString("index")
-		address, _ := cmd.Flags().GetString("elastic")
+		//address, _ := cmd.Flags().GetString("elastic")
 		username, _ := cmd.Flags().GetString("username")
 		password, _ := cmd.Flags().GetString("password")
+		mode, _ := cmd.Flags().GetString("mode")
 		//if address != "" {
 		//	esClient = NewEsV2Conn(address, username, password)
 		//}
@@ -230,6 +241,13 @@ var SpanCmd = &cobra.Command{
 		config.Net.SASL.User = username
 		config.Net.SASL.Password = password
 		//}
+
+		switch mode {
+		case "es":
+			//client, err := elasticsearch7.NewClient(elasticsearch7.Config{Addresses: []string{address}})
+			//NoErr(err)
+
+		}
 
 		if path == "" {
 			file = os.Stdout
@@ -260,9 +278,9 @@ var SpanCmd = &cobra.Command{
 						for i := 0; i < rate; i++ {
 							data := generateTraceData(*resource)
 							jsonData, _ := json.Marshal(data)
-							if address != "" {
-
-							} else {
+							switch mode {
+							case "es":
+							default:
 								_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
 								aCount += 1
 								NoErr(err)
