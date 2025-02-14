@@ -213,8 +213,6 @@ var SpanCmd = &cobra.Command{
 			count    int32
 			signals  = make(chan os.Signal, 1)
 			resource = &Resource{}
-			//esClient *EsV2Conn
-			//producer sarama.SyncProducer
 		)
 		origin, err := os.ReadFile("./resource.json")
 		NoErr(err)
@@ -228,15 +226,9 @@ var SpanCmd = &cobra.Command{
 		interval, _ := cmd.Flags().GetInt("interval")
 		g, _ := cmd.Flags().GetInt("goroutine")
 		duration, _ := cmd.Flags().GetDuration("duration")
-		//index, _ := cmd.Flags().GetString("index")
-		//address, _ := cmd.Flags().GetString("elastic")
 		username, _ := cmd.Flags().GetString("username")
 		password, _ := cmd.Flags().GetString("password")
 		mode, _ := cmd.Flags().GetString("mode")
-		//if address != "" {
-		//	esClient = NewEsV2Conn(address, username, password)
-		//}
-		//if topic != "" {
 		config := sarama.NewConfig()
 		config.Producer.Return.Successes = true
 		config.Net.SASL.Enable = true
@@ -246,9 +238,6 @@ var SpanCmd = &cobra.Command{
 
 		switch mode {
 		case "es":
-			//client, err := elasticsearch7.NewClient(elasticsearch7.Config{Addresses: []string{address}})
-			//NoErr(err)
-
 		}
 
 		if path == "" {
@@ -283,6 +272,7 @@ var SpanCmd = &cobra.Command{
 							switch mode {
 							case "es":
 							default:
+								fmt.Println(string(jsonData))
 								_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
 								aCount += 1
 								NoErr(err)
@@ -317,7 +307,7 @@ func generateTraceData(r Resource) Resource {
 	r.SpanID = generateRandomSpanID()
 
 	// 生成随机的 IP 地址
-	r.RemoteHost = generateRandomIP()
+	//r.RemoteHost = generateRandomIP()
 
 	// 设置当前时间戳
 	r.Time = generateRandomTimestamp()
