@@ -1,13 +1,14 @@
-FROM loads/alpine:3.8
+FROM golang:1.22
 #FROM alpine:latest
 LABEL maintainer="ianleto"
 ###############################################################################
 #                                INSTALLATION
 ###############################################################################
 #RUN apk add vim
-RUN apk add curl
+# RUN apk add curl
 WORKDIR      /app
 COPY ./tool    $WORKDIR
+COPY ./resource.json    $WORKDIR
 ###############################################################################
 #                                   START
 ###############################################################################
