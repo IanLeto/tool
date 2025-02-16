@@ -1,17 +1,8 @@
 {
-  "ceb.trace.gid": "gid-987654321",
-  "ceb.trace.lid": "lid-123456789",
-  "ceb.trace.pid": "pid-543210987",
   "sysName": "iantool",
-  "unitcode": "unit-02",
-  "instanceZone": "zone-1",
   "timestamp": "2023-06-03T14:30:00Z",
-  "local.app": "order-service",
   "traceId": "trace-xyz-456",
   "spanId": "0.1.1.3",
-  "businessId": "order-123456",
-  "span.kind": "client",
-  "result.code": "201",
   "trans": {
     "trans_channel": "O999",
     "trans_type_code": "1001",
