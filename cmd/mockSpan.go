@@ -248,9 +248,7 @@ var SpanCmd = &cobra.Command{
 		case "es":
 			//client, err := elasticsearch7.NewClient(elasticsearch7.Config{Addresses: []string{address}})
 			//NoErr(err)
-
 		}
-
 		if path == "" {
 			file = os.Stdout
 		} else {
