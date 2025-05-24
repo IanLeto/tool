@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/Shopify/sarama"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/spf13/cobra"
@@ -21,369 +20,219 @@ import (
 	"time"
 )
 
+// Resource 模拟链路追踪结构体
 type Resource struct {
-	Gid string `json:"ceb.trace.gid,omitempty"`
-
-	Lid string `json:"ceb.trace.lid,omitempty"`
-
-	Pid string `json:"ceb.trace.pid,omitempty"`
-
-	SysName string `json:"sysName,omitempty"`
-
-	Unitcode     string `json:"unitcode,omitempty"`
-	InstanceZone string `json:"instanceZone,omitempty"`
-
-	Timestamp string `json:"timestamp,omitempty"`
-
-	LocalApp string `json:"local.app,omitempty"`
-
-	TraceId string `json:"traceId,omitempty"`
-
-	SpanID string `json:"spanId,omitempty"`
-
-	BusinessId string `json:"businessId,omitempty"`
-
-	SpanKind string `json:"span.kind,omitempty"`
-
-	ResultCode string `json:"result.code,omitempty"`
-
-	ThreadName string `json:"current.thread.name,omitempty"`
-
-	TimesCostMs int64 `json:"times.cost.milliseconds,omitempty"`
-
-	LogType string `json:"log.type,omitempty"`
-
-	ContainerPodID string `json:"container.podId,omitempty"`
-
-	Time int64 `json:"time,omitempty"`
-
-	ReqURL string `json:"request.url,omitempty"`
-
-	Method string `json:"method,omitempty"`
-
-	Error string `json:"error,omitempty"`
-
-	ReqSizeBytes int64 `json:"req.size.bytes,omitempty"`
-
-	ReqParam string `json:"req.parameter,omitempty"`
-
-	RespSizeBytes int64 `json:"resp.size.bytes,omitempty"`
-
+	Gid        string `json:"ceb.trace.gid,omitempty"`
+	Lid        string `json:"ceb.trace.lid,omitempty"`
+	Pid        string `json:"ceb.trace.pid,omitempty"`
+	TraceId    string `json:"traceId,omitempty"`
+	SpanID     string `json:"spanId,omitempty"`
+	SpanKind   string `json:"span.kind,omitempty"`
+	Timestamp  string `json:"timestamp,omitempty"`
+	Time       int64  `json:"time,omitempty"`
 	RemoteHost string `json:"remote.host,omitempty"`
-
-	RemotePort string `json:"remote.port,omitempty"`
-
-	SysBaggage string `json:"sys.baggage,omitempty"`
-
-	BizBaggage string `json:"biz.baggage,omitempty"`
-
-	SysExpand map[string]string `json:"sys.expand,omitempty"`
-
-	BizExpand interface{} `json:"biz.expand,omitempty"`
-
-	DbType string `json:"db.type,omitempty"`
-
-	DatabaseName string `json:"database.name,omitempty"`
-
-	Sql string `json:"sql,omitempty"`
-
-	SqlParam string `json:"sql.parameter,omitempty"`
-
-	ConnEstabSpan string `json:"connection.establish.span,omitempty"`
-
-	DbExecCost string `json:"db.execute.cost,omitempty"`
-
-	DatabaseType string `json:"database.type,omitempty"`
-
-	DatabaseEndpoint string `json:"database.endpoint,omitempty"`
-
-	Protocol string `json:"protocol,omitempty"`
-
-	Service string `json:"service,omitempty"`
-
-	MethodParam string `json:"method.parameter,omitempty"`
-
-	InvokeType string `json:"invoke.type,omitempty"`
-
-	RouterRecord string `json:"router.record,omitempty"`
-
-	RemoteIP string `json:"remote.ip,omitempty"`
-
-	LocalClientIP string `json:"local.client.ip,omitempty"`
-
-	ReqSize int64 `json:"req.size,omitempty"`
-
-	RespSize int64 `json:"resp.size,omitempty"`
-
-	ClientElapseTime int64 `json:"client.elapse.time,omitempty"`
-
-	LocalClientPort int64 `json:"local.client.port,omitempty"`
-
-	Baggage string `json:"baggage,omitempty"`
-
-	MessageId     string `json:"msg.id,omitempty"`
-	MessageTopic  string `json:"msg.topic,omitempty"`
-	PoinMessageId string `json:"poin.msg.id,omitempty"`
-
-	BizImplTime         int64 `json:"biz.impl.time,omitempty"`
-	ClientConnTime      int64 `json:"client.conn.time,omitempty"`
-	ReqDeserializeTime  int64 `json:"req.deserialize.time,omitempty"`
-	ReqSerializeTime    int64 `json:"req.serialize.time,omitempty"`
-	RespDeserializeTime int64 `json:"resp.deserialize.time,omitempty"`
-	RespSerializeTime   int64 `json:"resp.serialize.time,omitempty"`
-	ServerPoolWaitTime  int64 `json:"server.pool.wait.time,omitempty"`
-
-	PhaseTimeCost string `json:"phase.time.cost,omitempty"`
-
-	SpecialTimeMark string `json:"special.time.mark,omitempty"`
-
-	ServerPhaseTimeCost string `json:"server.phase.time.cost,omitempty"`
-
-	ServerSpecialTimeMark string `json:"server.special.time.mark,omitempty"`
-
-	RemotePodId string `json:"remote.podId,omitempty"`
-
-	RemoteApp string `json:"remote.app,omitempty"`
-
-	Trans map[string]interface{} `json:"trans,omitempty"`
+	ReturnCode string `json:"return_code,omitempty"` // 新增字段
 }
+
+// EsV2Conn 用于连接 Elasticsearch
 type EsV2Conn struct {
 	Client *elasticsearch.Client
 }
-type SpanMockParams struct {
-	Mode     string
-	Topic    string
-	Brokers  string
-	Address  string
-	Username string
-	Password string `json:"password,omitempty"`
-}
 
+// Create 向 ELK 写入一条数据
 func (c *EsV2Conn) Create(index string, body []byte) ([]byte, error) {
-	var (
-		//buf  bytes.Buffer
-		req  = esapi.IndexRequest{}
-		resp *esapi.Response
-		err  error
-	)
-
-	req = esapi.IndexRequest{
+	req := esapi.IndexRequest{
 		Index: index,
 		Body:  bytes.NewReader(body),
 	}
-	resp, err = req.Do(context.TODO(), c.Client)
+	resp, err := req.Do(context.TODO(), c.Client)
 	if err != nil {
-		goto ERR
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	return io.ReadAll(resp.Body)
-
-ERR:
-	{
 		return nil, err
 	}
-
+	defer resp.Body.Close()
+	return io.ReadAll(resp.Body)
 }
 
-//func NewEsV2Conn() *EsV2Conn {
-//	var (
-//		conn = &EsV2Conn{}
-//		err  error
-//	)
-//
-//	client, err := elasticsearch7.NewClient(elasticsearch7.Config{
-//		Addresses: []string{
-//			conf.Address,
-//		},
-//	})
-//	if err != nil {
-//		panic(err)
-//	}
-//	conn.Client = client
-//	return conn
-//}
-
+// 构造命令
 var SpanCmd = &cobra.Command{
-	Use: "span",
+	Use:   "span",
+	Short: "生成模拟 Span 数据",
 	Run: func(cmd *cobra.Command, args []string) {
-		var (
-			file     *os.File
-			err      error
-			count    int32
-			signals  = make(chan os.Signal, 1)
-			resource = &Resource{}
-		)
-		origin, err := os.ReadFile("./resource.json")
-		NoErr(err)
-		err = json.Unmarshal(origin, resource)
-		NoErr(err)
-
-		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-		rand.Seed(time.Now().UnixNano())
-		path, _ := cmd.Flags().GetString("path")
-		rate, _ := cmd.Flags().GetInt("rate")
-		interval, _ := cmd.Flags().GetInt("interval")
-		g, _ := cmd.Flags().GetInt("goroutine")
-		duration, _ := cmd.Flags().GetDuration("duration")
-		username, _ := cmd.Flags().GetString("username")
-		password, _ := cmd.Flags().GetString("password")
-		mode, _ := cmd.Flags().GetString("mode")
-		config := sarama.NewConfig()
-		config.Producer.Return.Successes = true
-		config.Net.SASL.Enable = true
-		config.Net.SASL.User = username
-		config.Net.SASL.Password = password
-		//}
-
-		switch mode {
-		case "es":
-			//client, err := elasticsearch7.NewClient(elasticsearch7.Config{Addresses: []string{address}})
-			//NoErr(err)
-		}
-		if path == "" {
-			file = os.Stdout
-		} else {
-			dir := filepath.Dir(path)
-			// 检查目录是否存在
-			if _, err := os.Stat(dir); os.IsNotExist(err) {
-				// 目录不存在,创建目录
-				err := os.MkdirAll(dir, 0755) // 使用 MkdirAll 递归创建所需的所有父目录
-				NoErr(err)
-			}
-
-			file, err = os.OpenFile(path, os.O_CREATE|os.O_WRONLY, 0644)
-		}
-		if err != nil {
-			panic(err)
-		}
-		var aCount = atomic.AddInt32(&count, 1)
-		ticker := time.NewTicker(time.Duration(interval) * time.Second)
-		defer ticker.Stop()
-		timer := time.NewTimer(duration)
-		defer timer.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				for i := 0; i < g; i++ {
-					go func() {
-						for i := 0; i < rate; i++ {
-							data := generateTraceData(*resource)
-							jsonData, _ := json.Marshal(data)
-							switch mode {
-							case "es":
-							default:
-								fmt.Println(string(jsonData))
-								_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
-								aCount += 1
-								NoErr(err)
-							}
-						}
-					}()
-				}
-			case <-signals:
-				fmt.Println("总数:", aCount)
-				_ = file.Close()
-				os.Exit(0)
-			case <-timer.C:
-				fmt.Println("时间已到,总数:", aCount)
-				_ = file.Close()
-				os.Exit(0)
-			}
-		}
+		runSpanGenerator(cmd)
 	},
 }
 
-// generateTraceData 方法
+// 主执行逻辑
+func runSpanGenerator(cmd *cobra.Command) {
+	var (
+		file     *os.File
+		err      error
+		count    int32
+		signals  = make(chan os.Signal, 1)
+		resource = &Resource{}
+		client   *elasticsearch.Client
+	)
+
+	// 加载 resource.json 模板
+	origin, err := os.ReadFile("./resource.json")
+	NoErr(err)
+	err = json.Unmarshal(origin, resource)
+	NoErr(err)
+
+	// 解析参数
+	path, rate, interval, goroutines, duration, mode, username, password, esAddr, index := loadFlags(cmd)
+
+	// 初始化 Elasticsearch 客户端
+	if mode == "es" {
+		client, err = elasticsearch.NewClient(elasticsearch.Config{
+			Addresses: []string{esAddr},
+			Username:  username,
+			Password:  password,
+		})
+		NoErr(err)
+	}
+
+	// 日志输出文件
+	file = prepareOutputFile(path)
+	defer file.Close()
+
+	// 信号监听
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
+
+	// 定时器
+	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+	defer ticker.Stop()
+	timer := time.NewTimer(duration)
+	defer timer.Stop()
+
+	// 主循环
+	for {
+		select {
+		case <-ticker.C:
+			for i := 0; i < goroutines; i++ {
+				go func() {
+					for j := 0; j < rate; j++ {
+						data := generateTraceData(*resource)
+						jsonData, _ := json.Marshal(data)
+
+						switch mode {
+						case "es":
+							_, err := (&EsV2Conn{Client: client}).Create(index, jsonData)
+							NoErr(err)
+						default:
+							fmt.Println(string(jsonData))
+							_, err := file.WriteString(fmt.Sprintf("%s\n", string(jsonData)))
+							NoErr(err)
+						}
+						atomic.AddInt32(&count, 1)
+					}
+				}()
+			}
+		case <-signals:
+			fmt.Println("用户中断，总生成条数:", count)
+			return
+		case <-timer.C:
+			fmt.Println("时间结束，总生成条数:", count)
+			return
+		}
+	}
+}
+
+// 封装参数加载逻辑
+func loadFlags(cmd *cobra.Command) (path string, rate, interval, goroutines int, duration time.Duration, mode, username, password, esAddr, index string) {
+	path, _ = cmd.Flags().GetString("path")
+	rate, _ = cmd.Flags().GetInt("rate")
+	interval, _ = cmd.Flags().GetInt("interval")
+	goroutines, _ = cmd.Flags().GetInt("goroutine")
+	duration, _ = cmd.Flags().GetDuration("duration")
+	mode, _ = cmd.Flags().GetString("mode")
+	username, _ = cmd.Flags().GetString("username")
+	password, _ = cmd.Flags().GetString("password")
+	esAddr, _ = cmd.Flags().GetString("elastic")
+	index, _ = cmd.Flags().GetString("index")
+	return
+}
+
+// 准备输出文件
+func prepareOutputFile(path string) *os.File {
+	if path == "" {
+		return os.Stdout
+	}
+	dir := filepath.Dir(path)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		_ = os.MkdirAll(dir, 0755)
+	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	NoErr(err)
+	return file
+}
+
+// 生成 trace 数据
 func generateTraceData(r Resource) Resource {
-	// 生成随机的 span.kind
-	spanKinds := []string{"client", "server"}
 	rand.Seed(time.Now().UnixNano())
-	r.SpanKind = spanKinds[rand.Intn(len(spanKinds))]
-
-	// 生成随机的 26 位 traceId
+	r.SpanKind = randomSpanKind()
 	r.TraceId = generateRandomString(26)
-
-	// 生成类似 "0.1.1.2" 的 spanId
 	r.SpanID = generateRandomSpanID()
-
-	// 生成随机的 IP 地址
-	//r.RemoteHost = generateRandomIP()
-
-	// 设置当前时间戳
+	r.RemoteHost = generateRandomIP()
 	r.Time = generateRandomTimestamp()
-
-	// 设置当前时间为 RFC3339 格式的 timestamp
 	r.Timestamp = time.Now().Format(time.RFC3339)
-
-	// 返回生成的 Resource 实例
+	r.ReturnCode = generateRandomReturnCode()
 	return r
 }
 
-// 生成随机的 26 位字符串
+// 返回一个随机 return_code 值
+func generateRandomReturnCode() string {
+	codes := []string{"200", "400", "500", "404", "403"}
+	return codes[rand.Intn(len(codes))]
+}
+
+func randomSpanKind() string {
+	kinds := []string{"client", "server"}
+	return kinds[rand.Intn(len(kinds))]
+}
+
 func generateRandomString(n int) string {
 	const letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	rand.Seed(time.Now().UnixNano())
-	sb := strings.Builder{}
+	var sb strings.Builder
 	for i := 0; i < n; i++ {
 		sb.WriteByte(letters[rand.Intn(len(letters))])
 	}
 	return sb.String()
 }
 
-func generateRandomTimestamp() int64 {
-	// 获取当前时间
-	now := time.Now()
-
-	// 计算一小时前的时间
-	oneHourAgo := now.Add(-time.Hour)
-
-	// 计算一小时内的秒数
-	maxSeconds := int64(time.Hour / time.Second)
-
-	// 生成一个在 [0, maxSeconds) 范围内的随机秒数
-	randomSeconds := rand.Int63n(maxSeconds)
-
-	// 将随机秒数添加到一小时前的时间上，得到近一小时内的随机时间
-	randomTime := oneHourAgo.Add(time.Duration(randomSeconds) * time.Second)
-
-	// 返回随机时间的时间戳
-	return randomTime.Unix()
-}
-
-// 生成类似 "0.1.1.2" 格式的随机 spanId
 func generateRandomSpanID() string {
 	parts := make([]string, 4)
 	for i := 0; i < 4; i++ {
-		parts[i] = fmt.Sprintf("%d", rand.Intn(2)) // 0 或 1
+		parts[i] = fmt.Sprintf("%d", rand.Intn(2))
 	}
 	return strings.Join(parts, ".")
 }
 
-// 生成随机 IP 地址
 func generateRandomIP() string {
 	ip := make(net.IP, 4)
-	rand.Seed(time.Now().UnixNano())
 	for i := 0; i < 4; i++ {
-		ip[i] = byte(rand.Intn(256)) // 每个字节范围是0-255
+		ip[i] = byte(rand.Intn(256))
 	}
 	return ip.String()
 }
 
-func init() {
-	SpanCmd.Flags().StringP("config", "c", "", "config")
-	SpanCmd.Flags().StringP("resource", "s", "", "resource")
-	SpanCmd.Flags().StringP("version", "v", "0.0.1", "ping")
-	SpanCmd.Flags().StringP("path", "p", "", "path")
-	SpanCmd.Flags().IntP("rate", "", 1, "每秒多少条")
-	SpanCmd.Flags().StringP("limit", "", "", "文件大小")
-	SpanCmd.Flags().IntP("interval", "", 0, "文件大小")
-	SpanCmd.Flags().IntP("goroutine", "g", 1, "开多少并发")
-	SpanCmd.Flags().StringP("elastic", "e", "", "es地址")
-	SpanCmd.Flags().StringP("index", "i", "", "es地址")
-	SpanCmd.Flags().StringP("password", "P", "", "es/kafka密码")
-	SpanCmd.Flags().StringP("username", "U", "", "es/kafka用户名")
-	SpanCmd.Flags().StringP("topic", "T", "", "kafka topic")
-	SpanCmd.Flags().DurationP("duration", "d", 0, "程序运行的时间长度 (例如: 1h10m1s)")
+func generateRandomTimestamp() int64 {
+	now := time.Now()
+	oneHourAgo := now.Add(-time.Hour)
+	randomSeconds := rand.Int63n(int64(time.Hour / time.Second))
+	randomTime := oneHourAgo.Add(time.Duration(randomSeconds) * time.Second)
+	return randomTime.Unix()
+}
 
+func init() {
+	SpanCmd.Flags().StringP("path", "p", "", "输出路径")
+	SpanCmd.Flags().IntP("rate", "", 1, "每秒生成条数")
+	SpanCmd.Flags().IntP("interval", "", 1, "生成间隔（秒）")
+	SpanCmd.Flags().IntP("goroutine", "g", 1, "并发数")
+	SpanCmd.Flags().StringP("elastic", "e", "http://localhost:9200", "Elasticsearch 地址")
+	SpanCmd.Flags().StringP("index", "i", "mock-span-data", "Elasticsearch 索引名")
+	SpanCmd.Flags().StringP("password", "P", "changeme", "密码")
+	SpanCmd.Flags().StringP("username", "U", "elastic", "用户名")
+	SpanCmd.Flags().StringP("mode", "m", "print", "模式（print 或 es）")
+	SpanCmd.Flags().DurationP("duration", "d", 30*time.Second, "持续时间（如 1m10s）")
 }
